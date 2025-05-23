@@ -16,118 +16,120 @@
 </head>
 
 <body>
-  <h1>💳 Credit Card Expenses Manager</h1>
+  <div class="main-container">
+    <h1>💳 Credit Card Expenses Manager</h1>
 
-  <div class="controls-container">
-    <div>
-      <label for="visaCsvInput" class="file-label">VISA:</label>
-      <input type="file" id="visaCsvInput" accept=".csv" multiple>
+    <div class="controls-container">
+      <div>
+        <label for="visaCsvInput" class="file-label">VISA:</label>
+        <input type="file" id="visaCsvInput" accept=".csv" multiple>
+      </div>
+      <div>
+        <label for="amexCsvInput" class="file-label">AMEX:</label>
+        <input type="file" id="amexCsvInput" accept=".xls, .xlsx" multiple>
+      </div>
+      <div>
+        <label for="rogersCsvInput" class="file-label">ROGERS:</label>
+        <input type="file" id="rogersCsvInput" accept=".csv" multiple>
+      </div>
+      <div class="date-filter-container">
+        <label>Global Actions:</label>
+        <button id="showAllButton">Show All Data</button>
+        <button id="clearAllFiltersButton">Clear All Filters</button>
+      </div>
     </div>
-    <div>
-      <label for="amexCsvInput" class="file-label">AMEX:</label>
-      <input type="file" id="amexCsvInput" accept=".xls, .xlsx" multiple>
-    </div>
-    <div>
-      <label for="rogersCsvInput" class="file-label">ROGERS:</label>
-      <input type="file" id="rogersCsvInput" accept=".csv" multiple>
-    </div>
+
+    <h2>VISA Transactions</h2>
     <div class="date-filter-container">
-      <label>Global Actions:</label>
-      <button id="showAllButton">Show All Data</button>
-      <button id="clearAllFiltersButton">Clear All Filters</button>
+      <label for="visaStartDate">From:</label>
+      <input type="date" id="visaStartDate">
+      <label for="visaEndDate">To:</label>
+      <input type="date" id="visaEndDate">
+      <button id="visaFilterButton">Filter VISA</button>
+      <button id="visaClearFilterButton">Clear VISA Filter</button>
     </div>
-  </div>
+    <div class="sort-info">Sorted by Date (Newest First)</div>
+    <table id="visaTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Expenses</th>
+          <th>Split (P)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="visaTableBody">
+        <!-- Data will be inserted here by JavaScript -->
+      </tbody>
+    </table>
+    <div class="total-amount">
+      Total VISA Expenses: <span id="visaTotalAmount">0.00</span>
+    </div>
 
-  <h2>VISA Transactions</h2>
-  <div class="date-filter-container">
-    <label for="visaStartDate">From:</label>
-    <input type="date" id="visaStartDate">
-    <label for="visaEndDate">To:</label>
-    <input type="date" id="visaEndDate">
-    <button id="visaFilterButton">Filter VISA</button>
-    <button id="visaClearFilterButton">Clear VISA Filter</button>
-  </div>
-  <div class="sort-info">Sorted by Date (Newest First)</div>
-  <table id="visaTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Expenses</th>
-        <th>Split (P)</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="visaTableBody">
-      <!-- Data will be inserted here by JavaScript -->
-    </tbody>
-  </table>
-  <div class="total-amount">
-    Total VISA Expenses: <span id="visaTotalAmount">0.00</span>
-  </div>
+    <h2>AMEX Transactions</h2>
+    <div class="date-filter-container">
+      <label for="amexStartDate">From:</label>
+      <input type="date" id="amexStartDate">
+      <label for="amexEndDate">To:</label>
+      <input type="date" id="amexEndDate">
+      <button id="amexFilterButton">Filter AMEX</button>
+      <button id="amexClearFilterButton">Clear AMEX Filter</button>
+    </div>
+    <div class="sort-info">Sorted by Date (Newest First)</div>
+    <table id="amexTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Expenses</th>
+          <th>Split (P)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="amexTableBody">
+        <!-- Data will be inserted here by JavaScript -->
+      </tbody>
+    </table>
+    <div class="total-amount">
+      Total AMEX Expenses: <span id="amexTotalAmount">0.00</span>
+    </div>
 
-  <h2>AMEX Transactions</h2>
-  <div class="date-filter-container">
-    <label for="amexStartDate">From:</label>
-    <input type="date" id="amexStartDate">
-    <label for="amexEndDate">To:</label>
-    <input type="date" id="amexEndDate">
-    <button id="amexFilterButton">Filter AMEX</button>
-    <button id="amexClearFilterButton">Clear AMEX Filter</button>
-  </div>
-  <div class="sort-info">Sorted by Date (Newest First)</div>
-  <table id="amexTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Expenses</th>
-        <th>Split (P)</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="amexTableBody">
-      <!-- Data will be inserted here by JavaScript -->
-    </tbody>
-  </table>
-  <div class="total-amount">
-    Total AMEX Expenses: <span id="amexTotalAmount">0.00</span>
-  </div>
+    <h2>ROGERS Transactions</h2>
+    <div class="date-filter-container">
+      <label for="rogersStartDate">From:</label>
+      <input type="date" id="rogersStartDate">
+      <label for="rogersEndDate">To:</label>
+      <input type="date" id="rogersEndDate">
+      <button id="rogersFilterButton">Filter ROGERS</button>
+      <button id="rogersClearFilterButton">Clear ROGERS Filter</button>
+    </div>
+    <div class="sort-info">Sorted by Date (Newest First)</div>
+    <table id="rogersTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Expenses</th>
+          <th>Split (P)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rogersTableBody">
+        <!-- Data will be inserted here by JavaScript -->
+      </tbody>
+    </table>
+    <div class="total-amount">
+      Total ROGERS Expenses: <span id="rogersTotalAmount">0.00</span>
+    </div>
 
-  <h2>ROGERS Transactions</h2>
-  <div class="date-filter-container">
-    <label for="rogersStartDate">From:</label>
-    <input type="date" id="rogersStartDate">
-    <label for="rogersEndDate">To:</label>
-    <input type="date" id="rogersEndDate">
-    <button id="rogersFilterButton">Filter ROGERS</button>
-    <button id="rogersClearFilterButton">Clear ROGERS Filter</button>
-  </div>
-  <div class="sort-info">Sorted by Date (Newest First)</div>
-  <table id="rogersTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Expenses</th>
-        <th>Split (P)</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="rogersTableBody">
-      <!-- Data will be inserted here by JavaScript -->
-    </tbody>
-  </table>
-  <div class="total-amount">
-    Total ROGERS Expenses: <span id="rogersTotalAmount">0.00</span>
-  </div>
+    <div class="grand-total fade-in">
+      GRAND TOTAL: <span id="grandTotalAmount">0.00</span>
+    </div>
 
-  <div class="grand-total fade-in">
-    GRAND TOTAL: <span id="grandTotalAmount">0.00</span>
-  </div>
-
-  <div class="export-container">
-    <button id="exportPdfBtn" class="btn-export">Export as PDF</button>
+    <div class="export-container">
+      <button id="exportPdfBtn" class="btn-export">Export as PDF</button>
+    </div>
   </div>
 
   <!-- External JavaScript -->

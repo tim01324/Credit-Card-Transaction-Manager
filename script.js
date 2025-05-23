@@ -660,10 +660,9 @@ function renderRogersTableWithFilters() {
   updateRogersTotal(filteredTransactions);
 }
 
-// Render a single transaction row with enhanced styling
+// Render a single transaction row - no animations
 function renderTransaction(transaction) {
   const row = document.createElement('tr');
-  row.className = 'fade-in';
 
   // Date cell
   const dateCell = document.createElement('td');
@@ -712,10 +711,9 @@ function renderTransaction(transaction) {
   tableBody.appendChild(row);
 }
 
-// Render a single AMEX transaction row with enhanced styling
+// Render a single AMEX transaction row - no animations
 function renderAmexTransaction(transaction) {
   const row = document.createElement('tr');
-  row.className = 'fade-in';
 
   // Date cell
   const dateCell = document.createElement('td');
@@ -764,10 +762,9 @@ function renderAmexTransaction(transaction) {
   amexTableBody.appendChild(row);
 }
 
-// Render a single ROGERS transaction row with enhanced styling
+// Render a single ROGERS transaction row - no animations
 function renderRogersTransaction(transaction) {
   const row = document.createElement('tr');
-  row.className = 'fade-in';
 
   const dateCell = row.insertCell();
   dateCell.textContent = formatDate(transaction.date);
