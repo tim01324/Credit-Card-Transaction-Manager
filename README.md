@@ -1,143 +1,290 @@
-https://tim01324.github.io/Credit-Card-Transaction-Manager/
+# 💳 Credit Card Expenses Manager
 
-# 💳 Credit Card Splitter
+**Never fight over "Who bought THAT?" again!**
 
-**Ever played "Who Spent What?" with your partner?**
+A modern, powerful web application for tracking and splitting credit card expenses across multiple cards. Perfect for couples, roommates, or anyone managing shared expenses across VISA, AMEX, and ROGERS credit cards.
 
-This app solves the eternal relationship question: "Who bought THAT?!" Track and split expenses on your shared TD, Amex, and Rogers credit cards without starting World War III in your living room.
+## ✨ Live Demo
 
-## Features
+🌐 **[Try it now!](https://tim01324.github.io/Credit-Card-Transaction-Manager/)**
 
--   Import transactions from TD, Amex, and Rogers
--   Split expenses fairly (or unfairly, we don't judge)
--   Find out who owes who without passive-aggressive Post-it notes
+## 🎯 Why Use This Tool?
 
-Save your relationship. Use Credit Card Splitter.
+-   **🔥 No More Arguments**: Automatically track who spent what and when
+-   **⚡ Lightning Fast**: Upload files and see results instantly
+-   **🎨 Beautiful Interface**: Modern, intuitive design that's a joy to use
+-   **📊 Smart Analytics**: Get instant totals and insights
+-   **📱 Mobile Ready**: Works perfectly on any device
 
-# Bank Transaction Manager
+---
 
-一个用于管理银行交易数据的 Web 应用程序，支持 VISA、AMEX 和 ROGERS 三种银行账单。
+## 🚀 Key Features
 
-## 项目结构
+### 💼 **Multi-Card Support**
 
-```
-Credit-Card-Transaction-Manager/
-├── index.html          # 主HTML文件（页面结构）
-├── styles.css          # CSS样式文件
-├── script.js           # JavaScript逻辑文件
-└── README.md           # 项目说明文件
-```
+-   **VISA**: CSV file support
+-   **AMEX**: Excel (XLS/XLSX) file support
+-   **ROGERS**: CSV file support
 
-## 功能特点
+### 🎛️ **Independent Filtering System**
 
-### ✅ **三个独立的日期过滤器**
+-   **Separate date filters** for each credit card
+-   **No interference** between different card filters
+-   **Smart date handling** with full day coverage
 
--   **VISA**: 独立的开始和结束日期过滤器
--   **AMEX**: 独立的开始和结束日期过滤器
--   **ROGERS**: 独立的开始和结束日期过滤器
+### ⚡ **Auto-Display Technology**
 
-### ✅ **自动显示数据**
+-   **Instant results** - no manual button clicking required
+-   **Auto-sorted by date** (newest transactions first)
+-   **Real-time updates** as you upload files
 
--   上传文件后**自动显示所有数据**，不需要手动点击按钮
--   每个银行的数据独立处理，不会被其他银行的过滤器影响
--   **自动日期排序**: 所有交易数据按日期从新到旧自动排序，便于查看
+### 💰 **Smart Expense Management**
 
-### ✅ **文件支持**
+-   **Split expenses** with one click (50/50 sharing)
+-   **Delete unwanted** transactions easily
+-   **Duplicate detection** prevents data corruption
+-   **Live total calculations** with grand totals
 
--   **VISA**: 支持 CSV 格式文件
--   **AMEX**: 支持 XLS/XLSX Excel 格式文件
--   **ROGERS**: 支持 CSV 格式文件
+### 📄 **Professional Reporting**
 
-### ✅ **交易功能**
+-   **PDF export** with beautiful formatting
+-   **Filter-aware reports** showing exactly what you filtered
+-   **Detailed breakdowns** by card type
+-   **Professional presentation** ready for sharing
 
--   **分摊功能**: 点击"P"按钮可以将费用分摊（除以 2）
--   **删除功能**: 可以删除不需要的交易记录
--   **重复检测**: 自动检测并跳过重复的交易记录
+---
 
-### ✅ **导出功能**
-
--   支持 PDF 导出，包含所有应用的过滤器信息
--   PDF 中会显示每个银行具体的日期过滤范围
-
-## 使用方法
-
-### 1. 上传文件
-
-1. 点击对应银行的文件上传按钮
-2. 选择相应格式的文件（VISA/ROGERS 用 CSV，AMEX 用 Excel）
-3. 文件上传后会自动显示所有交易数据
-
-### 2. 设置过滤器
-
-1. 为每个银行独立设置日期范围
-2. 点击对应的"Filter [银行名]"按钮应用过滤器
-3. 点击"Clear [银行名] Filter"清除该银行的过滤器
-
-### 3. 全局操作
-
--   **Show All Data**: 显示所有银行的所有交易数据
--   **Clear All Filters**: 清除所有银行的日期过滤器
-
-### 4. 交易管理
-
--   点击"P"按钮进行费用分摊
--   点击"Delete"按钮删除交易记录
-
-### 5. 导出报告
-
--   点击"Export as PDF"按钮生成包含当前过滤结果的 PDF 报告
-
-## 文件格式要求
-
-### VISA/ROGERS CSV 格式
+## 📁 Project Structure
 
 ```
+Credit-Card-Expenses-Manager/
+├── 📄 index.html          # Clean HTML structure
+├── 🎨 styles.css          # Modern CSS with animations
+├── ⚡ script.js           # Enhanced JavaScript logic
+└── 📖 README.md           # This documentation
+```
+
+## 🔧 How to Use
+
+### 1️⃣ **Upload Your Files**
+
+| Card Type | File Format | Action                                        |
+| --------- | ----------- | --------------------------------------------- |
+| 💳 VISA   | CSV         | Click "VISA" button → Select CSV file(s)      |
+| 💎 AMEX   | Excel       | Click "AMEX" button → Select XLS/XLSX file(s) |
+| 📶 ROGERS | CSV         | Click "ROGERS" button → Select CSV file(s)    |
+
+**✅ Pro Tip**: You can upload multiple files at once!
+
+### 2️⃣ **Filter by Date Range**
+
+Each card has its own independent filter system:
+
+-   **From Date**: Set start date for filtering
+-   **To Date**: Set end date for filtering
+-   **Filter Button**: Apply the date range
+-   **Clear Filter**: Remove date restrictions
+
+### 3️⃣ **Manage Transactions**
+
+| Button     | Function           | Description                                   |
+| ---------- | ------------------ | --------------------------------------------- |
+| **P**      | Split Expense      | Divides amount by 2 (turns green when active) |
+| **Delete** | Remove Transaction | Permanently deletes the transaction           |
+
+### 4️⃣ **Global Actions**
+
+-   **Show All Data**: Displays every transaction across all cards
+-   **Clear All Filters**: Removes date filters from all cards
+-   **Export as PDF**: Generates professional report
+
+---
+
+## 📊 File Format Requirements
+
+### 💳 VISA/ROGERS CSV Format
+
+```csv
 Date,Name,Amount
-MM/DD/YYYY,Transaction Name,Amount
+MM/DD/YYYY,Transaction Description,Amount
+01/15/2024,Starbucks Coffee,4.25
+01/16/2024,Gas Station,45.67
 ```
 
-### AMEX Excel 格式
+### 💎 AMEX Excel Format
 
--   Excel 文件第 18 行开始为数据行
--   列结构：Date(A), Description(B), 跳过(C), Cardmember(D), Amount(E)
+-   **Row 18+**: Transaction data starts here
+-   **Column A**: Date
+-   **Column B**: Description
+-   **Column D**: Cardmember Name
+-   **Column E**: Amount
 
-### ROGERS CSV 格式
+### 📶 ROGERS CSV Format
 
--   第 1 行为标题行，第 2 行开始为数据
--   日期在第 A 列（YYYY-MM-DD 格式）
--   商户名称在第 H 列
--   金额在第 M 列
+-   **Row 1**: Headers
+-   **Row 2+**: Transaction data
+-   **Column A**: Date (YYYY-MM-DD)
+-   **Column H**: Merchant Name
+-   **Column M**: Amount
 
-## 技术栈
+---
 
--   **HTML5**: 页面结构
--   **CSS3**: 样式和动画
--   **JavaScript ES6**: 应用逻辑
--   **SheetJS**: Excel 文件解析
--   **jsPDF**: PDF 生成和导出
+## 🛠️ Technical Stack
 
-## 浏览器兼容性
+| Technology          | Purpose                     | Version |
+| ------------------- | --------------------------- | ------- |
+| **HTML5**           | Structure & Semantics       | Latest  |
+| **CSS3**            | Modern Styling & Animations | Latest  |
+| **JavaScript ES6+** | Application Logic           | Latest  |
+| **SheetJS**         | Excel File Processing       | v0.19.2 |
+| **jsPDF**           | PDF Generation              | v2.5.1  |
+| **jsPDF AutoTable** | Table Formatting            | v3.5.25 |
 
-支持所有现代浏览器：
+---
 
--   Chrome 60+
--   Firefox 55+
--   Safari 12+
--   Edge 79+
+## 🌐 Browser Compatibility
 
-## 更新日志
+| Browser     | Minimum Version | Status          |
+| ----------- | --------------- | --------------- |
+| **Chrome**  | 60+             | ✅ Full Support |
+| **Firefox** | 55+             | ✅ Full Support |
+| **Safari**  | 12+             | ✅ Full Support |
+| **Edge**    | 79+             | ✅ Full Support |
 
-### v2.0.0 (最新版本)
+---
 
--   ✅ 分离文件结构：HTML、CSS、JS 独立文件
--   ✅ 修复上传后自动显示问题
--   ✅ 添加独立的日期过滤器
--   ✅ 新增自动日期排序功能：交易数据按日期从新到旧自动排序
--   ✅ 添加视觉排序指示器和提示信息
--   ✅ 改善用户体验和维护性
+## 🎨 Design Features
 
-### v1.0.0
+### 🌈 **Modern UI Elements**
 
--   ✅ 基础功能：文件上传、数据展示、PDF 导出
--   ✅ 支持三种银行格式
--   ✅ 交易分摊和删除功能
+-   **Gradient backgrounds** with smooth transitions
+-   **Hover effects** for better interactivity
+-   **Responsive design** for all screen sizes
+-   **Professional typography** using Inter font
+
+### 🎭 **Smart Animations**
+
+-   **Fade-in effects** for new transactions
+-   **Scale animations** for grand total updates
+-   **Shimmer effects** on the main heading
+-   **Smooth transitions** throughout the interface
+
+### 📱 **Mobile Optimization**
+
+-   **Touch-friendly** buttons and controls
+-   **Responsive tables** that work on small screens
+-   **Optimized layouts** for portrait and landscape
+
+---
+
+## 🔒 Security & Privacy
+
+-   **📊 Client-side only**: No data leaves your device
+-   **🔐 No accounts required**: Use instantly without registration
+-   **💾 No data storage**: Files are processed in memory only
+-   **🌐 Works offline**: Download and use without internet
+
+---
+
+## 📈 Performance Features
+
+### ⚡ **Optimized Processing**
+
+-   **Duplicate detection** prevents data corruption
+-   **Efficient file parsing** handles large datasets
+-   **Smart memory management** prevents browser slowdowns
+-   **Progressive loading** for smooth user experience
+
+### 🎯 **Error Handling**
+
+-   **Graceful error recovery** from file format issues
+-   **User-friendly messages** for all error states
+-   **Detailed logging** for troubleshooting
+-   **Automatic retry** mechanisms where appropriate
+
+---
+
+## 🆕 Recent Updates
+
+### **v3.0.0** - Credit Card Expenses Manager _(Latest)_
+
+-   🎨 **Complete visual redesign** with modern gradients and animations
+-   🚀 **Enhanced user experience** with real-time notifications
+-   💰 **Improved currency formatting** with proper localization
+-   📊 **Better PDF reports** with professional layouts
+-   🛡️ **Robust error handling** with user-friendly messages
+-   📱 **Full mobile optimization** for all screen sizes
+
+### **v2.0.0** - Modular Architecture
+
+-   ✅ **Separated file structure**: HTML, CSS, JS independence
+-   ✅ **Fixed auto-display**: Instant results after upload
+-   ✅ **Independent filters**: No cross-card interference
+-   ✅ **Auto-sorting**: Newest transactions first
+-   ✅ **Enhanced maintainability**: Clean, organized code
+
+### **v1.0.0** - Foundation
+
+-   ✅ **Basic functionality**: File upload and display
+-   ✅ **Multi-card support**: VISA, AMEX, ROGERS
+-   ✅ **Transaction management**: Split and delete functions
+-   ✅ **PDF export**: Basic reporting capabilities
+
+---
+
+## 🤝 Contributing
+
+Want to make this even better? Here's how:
+
+1. **🍴 Fork** the repository
+2. **🌱 Create** a feature branch (`git checkout -b amazing-feature`)
+3. **💾 Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **📤 Push** to the branch (`git push origin amazing-feature`)
+5. **🎯 Open** a Pull Request
+
+---
+
+## 🐛 Found a Bug?
+
+We'd love to fix it! Please:
+
+1. **📝 Create an issue** with detailed description
+2. **🖼️ Include screenshots** if relevant
+3. **💻 Mention your browser** and version
+4. **📋 Describe steps** to reproduce
+
+---
+
+## 💡 Feature Requests
+
+Got ideas? We're listening!
+
+-   **💬 Open an issue** with the "enhancement" label
+-   **🎯 Describe the use case** and benefits
+-   **🎨 Mock up the UI** if you have design ideas
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+## 🙏 Acknowledgments
+
+-   **🎨 Design inspiration** from modern fintech apps
+-   **🔧 Built with love** for the community
+-   **🌟 Thanks to all contributors** who make this better
+
+---
+
+<div align="center">
+
+### ⭐ **Star this repo if it helped you!** ⭐
+
+**Made with ❤️ for better expense management**
+
+[🐛 Report Bug](../../issues) • [✨ Request Feature](../../issues) • [💬 Discussions](../../discussions)
+
+</div>
