@@ -924,7 +924,7 @@ function updateRogersTotal(filteredTransactions) {
   updateGrandTotal();
 }
 
-// Calculate and display grand total with animation
+// Calculate and display grand total without animations
 function updateGrandTotal() {
   // Get current totals from spans
   const visaTotal = parseFloat(totalAmountSpan.textContent) || 0;
@@ -934,14 +934,9 @@ function updateGrandTotal() {
   // Calculate grand total
   const grandTotal = visaTotal + amexTotal + rogersTotal;
 
-  // Update the grand total display with animation
+  // Update the grand total display without animation
   const grandTotalElement = document.getElementById('grandTotalAmount');
-  grandTotalElement.style.transform = 'scale(1.1)';
   grandTotalElement.textContent = grandTotal.toFixed(2);
-
-  setTimeout(() => {
-    grandTotalElement.style.transform = 'scale(1)';
-  }, 200);
 }
 
 // Enhanced PDF export with better formatting and error handling
