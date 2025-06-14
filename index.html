@@ -32,11 +32,16 @@
         <label for="rogersCsvInput" class="file-label">ROGERS:</label>
         <input type="file" id="rogersCsvInput" accept=".csv" multiple>
       </div>
-      <div class="date-filter-container">
-        <label>Global Actions:</label>
-        <button id="showAllButton">Show All Data</button>
-        <button id="clearAllFiltersButton">Clear All Filters</button>
+    </div>
+
+    <div class="manual-entry-container">
+      <h2>Manual Transaction Entry</h2>
+      <div class="form-row">
+        <input type="date" id="manualDate" aria-label="Transaction Date">
+        <input type="text" id="manualName" placeholder="Transaction Name" aria-label="Transaction Name">
+        <input type="number" id="manualExpense" placeholder="Expense Amount" step="0.01" aria-label="Expense Amount">
       </div>
+      <button id="addManualTransactionBtn">Add Manual Transaction</button>
     </div>
 
     <h2>VISA Transactions</h2>
@@ -121,6 +126,26 @@
     </table>
     <div class="total-amount">
       Total ROGERS Expenses: <span id="rogersTotalAmount">0.00</span>
+    </div>
+
+    <h2>Manual Transactions</h2>
+    <div class="sort-info">Sorted by Date (Newest First)</div>
+    <table id="manualTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Expenses</th>
+          <th>Split (P)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="manualTableBody">
+        <!-- Manual transactions will be inserted here -->
+      </tbody>
+    </table>
+    <div class="total-amount">
+      Total Manual Expenses: <span id="manualTotalAmount">0.00</span>
     </div>
 
     <div class="grand-total fade-in">
