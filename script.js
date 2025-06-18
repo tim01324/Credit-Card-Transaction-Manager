@@ -402,14 +402,31 @@ function processAmexExcel(excelData) {
       // Parse date with enhanced validation
       let date = null;
       if (row[0]) {
+        const dateStr = String(row[0]).trim();
+
+        // Month name map for parsing
+        const monthMap = {
+          'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+          'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+
         if (typeof row[0] === 'number') {
           // Excel serial date conversion
           date = new Date(Math.round((row[0] - 25569) * 86400 * 1000));
-          // Set time to noon to avoid timezone issues
           date.setHours(12, 0, 0, 0);
         } else {
-          const dateStr = String(row[0]).trim();
-          date = new Date(dateStr + 'T12:00:00');
+          const parts = dateStr.replace(/,/g, '').split(' '); // e.g., "17", "Jun.", "2025"
+          if (parts.length === 3 && parts[1].slice(0, 3) in monthMap) {
+            const day = parseInt(parts[0]);
+            const month = monthMap[parts[1].slice(0, 3)];
+            const year = parseInt(parts[2]);
+            if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+              date = new Date(year, month, day, 12, 0, 0);
+            }
+          } else {
+            // Fallback for other string formats like YYYY-MM-DD
+            date = new Date(dateStr + 'T12:00:00');
+          }
         }
 
         if (!date || isNaN(date.getTime())) {
