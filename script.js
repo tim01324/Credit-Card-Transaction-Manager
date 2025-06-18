@@ -363,17 +363,37 @@ function processCSV(csvContent) {
 }
 
 function processAmexExcel(excelData) {
-  if (excelData.length <= 17) {
-    throw new Error('AMEX Excel file format is incorrect. Data should start from row 18.');
-  }
-
   let processed = 0;
   let skipped = 0;
+  let headerFound = false;
+  let dataStartIndex = -1;
 
-  // Start from row 18 (index 17)
-  for (let i = 17; i < excelData.length; i++) {
+  // Find the header row dynamically
+  for (let i = 0; i < excelData.length; i++) {
     const row = excelData[i];
-    if (!Array.isArray(row) || row.length < 5) {
+    if (Array.isArray(row) && row.length > 1 &&
+      String(row[0]).trim() === 'Date' &&
+      String(row[1]).trim() === 'Description') {
+      dataStartIndex = i + 1;
+      headerFound = true;
+      break;
+    }
+  }
+
+  if (!headerFound) {
+    console.error('AMEX Excel file format is incorrect. Could not find transaction header row.');
+    alert('AMEX file format error: Could not find the transaction header row (expected "Date" and "Description").');
+    return;
+  }
+
+  // Start from the row after the header
+  for (let i = dataStartIndex; i < excelData.length; i++) {
+    const row = excelData[i];
+    if (!Array.isArray(row) || row.length < 2 || !row[0]) {
+      // Stop if we reach the end of the transactions
+      if (row && row.length > 0 && String(row[0]).includes('Total')) {
+        break;
+      }
       skipped++;
       continue;
     }
@@ -422,6 +442,13 @@ function processAmexExcel(excelData) {
           amountStr = amountStr.substring(1);
         }
         amountStr = amountStr.replace(/,/g, '');
+        // Handle credits which might be negative or in a separate column in some formats
+        if (row[5] !== undefined && row[5] !== null) {
+          let creditStr = String(row[5]).trim().replace(/,/g, '');
+          if (parseFloat(creditStr) > 0) {
+            amountStr = `-${creditStr}`;
+          }
+        }
         expense = parseFloat(amountStr);
       } else {
         skipped++;
