@@ -54,8 +54,22 @@ function formatDate(date) {
   return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(date);
 }
 
+// Ensure all existing transactions have isCompany property
+function initializeTransactions() {
+  [transactions, amexTransactions, rogersTransactions, manualTransactions].forEach(transactionArray => {
+    transactionArray.forEach(transaction => {
+      if (transaction.isCompany === undefined) {
+        transaction.isCompany = false;
+      }
+    });
+  });
+}
+
 // Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
+  // Initialize existing transactions
+  initializeTransactions();
+
   // File Uploads
   fileInput.addEventListener('change', handleFileUpload);
   amexFileInput.addEventListener('change', handleAmexFileUpload);
@@ -614,6 +628,11 @@ function renderTable(tbody, transactions, renderRowFunction) {
 
 // --- INDIVIDUAL ROW RENDERERS ---
 function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, deleteFn) {
+  // Ensure backward compatibility for existing transactions
+  if (transaction.isCompany === undefined) {
+    transaction.isCompany = false;
+  }
+
   const row = document.createElement('tr');
   row.innerHTML = `
         <td>${formatDate(transaction.date)}</td>
