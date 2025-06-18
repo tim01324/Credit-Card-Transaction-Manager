@@ -200,7 +200,8 @@ function handleAddManualTransaction() {
     id: 'manual_' + Date.now(),
     date, name, expense,
     originalExpense: expense,
-    isSplit: false
+    isSplit: false,
+    isCompany: false
   };
 
   console.log(`Adding MANUAL transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Name: ${name}, Amount: ${formatCurrency(expense)}`);
@@ -289,7 +290,8 @@ function processCSV(csvContent) {
           name: name,
           expense: expense,
           originalExpense: expense,
-          isSplit: false
+          isSplit: false,
+          isCompany: false
         };
 
         console.log(`Adding VISA transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Name: ${name}, Amount: ${formatCurrency(expense)}`);
@@ -399,7 +401,8 @@ function processAmexExcel(excelData) {
           name: name,
           expense: expense,
           originalExpense: expense,
-          isSplit: false
+          isSplit: false,
+          isCompany: false
         };
 
         console.log(`Adding AMEX transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Name: ${name}, Amount: ${formatCurrency(expense)}`);
@@ -533,7 +536,8 @@ function processRogersCSV(csvContent) {
           name: merchantName,
           expense: expense,
           originalExpense: expense,
-          isSplit: false
+          isSplit: false,
+          isCompany: false
         };
 
         console.log(`Adding ROGERS transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Merchant: ${merchantName}, Amount: ${formatCurrency(expense)}`);
@@ -609,27 +613,29 @@ function renderTable(tbody, transactions, renderRowFunction) {
 }
 
 // --- INDIVIDUAL ROW RENDERERS ---
-function createTransactionRow(transaction, toggleSplitFn, deleteFn) {
+function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, deleteFn) {
   const row = document.createElement('tr');
   row.innerHTML = `
         <td>${formatDate(transaction.date)}</td>
         <td title="${transaction.name}">${transaction.name}</td>
         <td style="font-weight: bold; color: ${transaction.isSplit ? 'var(--success-color)' : 'inherit'};">${formatCurrency(transaction.expense)}</td>
         <td><button class="btn-split ${transaction.isSplit ? 'active' : ''}" title="${transaction.isSplit ? 'Remove split' : 'Split expense'}">P</button></td>
+        <td><button class="btn-company ${transaction.isCompany ? 'active' : ''}" title="${transaction.isCompany ? 'Remove company expense' : 'Mark as company expense'}">C</button></td>
         <td><button class="btn-delete" title="Delete transaction">Delete</button></td>
     `;
   row.querySelector('.btn-split').onclick = () => toggleSplitFn(transaction.id);
+  row.querySelector('.btn-company').onclick = () => toggleCompanyFn(transaction.id);
   row.querySelector('.btn-delete').onclick = () => deleteFn(transaction.id);
   return row;
 }
 
-function renderTransaction(t) { tableBody.appendChild(createTransactionRow(t, toggleSplit, deleteTransaction)); }
-function renderAmexTransaction(t) { amexTableBody.appendChild(createTransactionRow(t, toggleAmexSplit, deleteAmexTransaction)); }
-function renderRogersTransaction(t) { rogersTableBody.appendChild(createTransactionRow(t, toggleRogersSplit, deleteRogersTransaction)); }
-function renderManualTransaction(t) { manualTableBody.appendChild(createTransactionRow(t, toggleManualSplit, deleteManualTransaction)); }
+function renderTransaction(t) { tableBody.appendChild(createTransactionRow(t, toggleSplit, toggleCompany, deleteTransaction)); }
+function renderAmexTransaction(t) { amexTableBody.appendChild(createTransactionRow(t, toggleAmexSplit, toggleAmexCompany, deleteAmexTransaction)); }
+function renderRogersTransaction(t) { rogersTableBody.appendChild(createTransactionRow(t, toggleRogersSplit, toggleRogersCompany, deleteRogersTransaction)); }
+function renderManualTransaction(t) { manualTableBody.appendChild(createTransactionRow(t, toggleManualSplit, toggleManualCompany, deleteManualTransaction)); }
 
 
-// --- ACTIONS (DELETE & SPLIT) ---
+// --- ACTIONS (DELETE, SPLIT & COMPANY) ---
 function generalToggleSplit(id, transactionsArray, renderFn) {
   const transaction = transactionsArray.find(t => t.id === id);
   if (!transaction) return;
@@ -639,6 +645,14 @@ function generalToggleSplit(id, transactionsArray, renderFn) {
   } else {
     transaction.expense = transaction.originalExpense;
   }
+  renderFn();
+  updateGrandTotal();
+}
+
+function generalToggleCompany(id, transactionsArray, renderFn) {
+  const transaction = transactionsArray.find(t => t.id === id);
+  if (!transaction) return;
+  transaction.isCompany = !transaction.isCompany;
   renderFn();
   updateGrandTotal();
 }
@@ -655,15 +669,19 @@ function generalDelete(id, transactionsArray, renderFn, typeName) {
 }
 
 function toggleSplit(id) { generalToggleSplit(id, transactions, renderTableWithFilters); }
+function toggleCompany(id) { generalToggleCompany(id, transactions, renderTableWithFilters); }
 function deleteTransaction(id) { generalDelete(id, transactions, renderTableWithFilters, 'VISA'); }
 
 function toggleAmexSplit(id) { generalToggleSplit(id, amexTransactions, renderAmexTableWithFilters); }
+function toggleAmexCompany(id) { generalToggleCompany(id, amexTransactions, renderAmexTableWithFilters); }
 function deleteAmexTransaction(id) { generalDelete(id, amexTransactions, renderAmexTableWithFilters, 'AMEX'); }
 
 function toggleRogersSplit(id) { generalToggleSplit(id, rogersTransactions, renderRogersTableWithFilters); }
+function toggleRogersCompany(id) { generalToggleCompany(id, rogersTransactions, renderRogersTableWithFilters); }
 function deleteRogersTransaction(id) { generalDelete(id, rogersTransactions, renderRogersTableWithFilters, 'ROGERS'); }
 
 function toggleManualSplit(id) { generalToggleSplit(id, manualTransactions, renderManualTable); }
+function toggleManualCompany(id) { generalToggleCompany(id, manualTransactions, renderManualTable); }
 function deleteManualTransaction(id) { generalDelete(id, manualTransactions, renderManualTable, 'MANUAL'); }
 
 
@@ -690,17 +708,58 @@ function exportToPdf() {
   const addTransactionTableToPdf = (title, transactions, totalSpan, startY) => {
     if (transactions.length === 0) return startY;
     doc.text(title, 14, startY);
-    autoTable(doc, {
-      head: [['Date', 'Name', 'Expenses']],
-      body: transactions.map(t => [formatDate(t.date), t.name, formatCurrency(t.expense)]),
-      startY: startY + 5,
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      styles: { cellPadding: 2, fontSize: 8 },
-      didDrawPage: (data) => {
-        doc.text(`Total ${title}: ${totalSpan.textContent}`, 14, doc.internal.pageSize.height - 10);
-      }
-    });
-    return doc.autoTable.previous.finalY + 15;
+
+    // Separate personal and company transactions
+    const personalTransactions = transactions.filter(t => !t.isCompany);
+    const companyTransactions = transactions.filter(t => t.isCompany);
+
+    let currentY = startY + 5;
+
+    // Add personal transactions
+    if (personalTransactions.length > 0) {
+      doc.text('Personal Expenses:', 14, currentY);
+      autoTable(doc, {
+        head: [['Date', 'Name', 'Expenses', 'Split']],
+        body: personalTransactions.map(t => [
+          formatDate(t.date),
+          t.name,
+          formatCurrency(t.expense),
+          t.isSplit ? 'Yes' : 'No'
+        ]),
+        startY: currentY + 5,
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+        styles: { cellPadding: 2, fontSize: 8 }
+      });
+      currentY = doc.autoTable.previous.finalY + 10;
+    }
+
+    // Add company transactions
+    if (companyTransactions.length > 0) {
+      doc.text('Company Expenses:', 14, currentY);
+      autoTable(doc, {
+        head: [['Date', 'Name', 'Expenses', 'Split']],
+        body: companyTransactions.map(t => [
+          formatDate(t.date),
+          t.name,
+          formatCurrency(t.expense),
+          t.isSplit ? 'Yes' : 'No'
+        ]),
+        startY: currentY + 5,
+        headStyles: { fillColor: [52, 152, 219], textColor: 255 },
+        styles: { cellPadding: 2, fontSize: 8 }
+      });
+      currentY = doc.autoTable.previous.finalY + 10;
+    }
+
+    // Add totals
+    const personalTotal = personalTransactions.reduce((sum, t) => sum + t.expense, 0);
+    const companyTotal = companyTransactions.reduce((sum, t) => sum + t.expense, 0);
+
+    doc.text(`Personal Total: ${formatCurrency(personalTotal)}`, 14, currentY);
+    doc.text(`Company Total: ${formatCurrency(companyTotal)}`, 14, currentY + 10);
+    doc.text(`${title} Total: ${totalSpan.textContent}`, 14, currentY + 20);
+
+    return currentY + 35;
   };
 
   let currentY = 20;

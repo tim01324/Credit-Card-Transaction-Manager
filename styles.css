@@ -174,10 +174,59 @@ button {
 }
 
 .btn-split,
+.btn-company,
 .btn-delete {
 	padding: 0.3rem 0.6rem;
 	font-size: 0.8rem;
 	margin: 0 0.2rem;
+	border-radius: var(--border-radius-small);
+	transition: var(--transition);
+}
+
+/* Split Button Styles */
+.btn-split {
+	background: linear-gradient(135deg, var(--warning-color), #bf7b00);
+	color: var(--white);
+	border: 1px solid var(--warning-color);
+}
+
+.btn-split:hover {
+	background: linear-gradient(135deg, #bf7b00, #a6690e);
+	box-shadow: var(--shadow-soft);
+}
+
+.btn-split.active {
+	background: linear-gradient(135deg, var(--success-color), #1e8449);
+	border-color: var(--success-color);
+}
+
+/* Company Button Styles */
+.btn-company {
+	background: linear-gradient(135deg, #5d6d7e, #34495e);
+	color: var(--white);
+	border: 1px solid #5d6d7e;
+}
+
+.btn-company:hover {
+	background: linear-gradient(135deg, #34495e, #2c3e50);
+	box-shadow: var(--shadow-soft);
+}
+
+.btn-company.active {
+	background: linear-gradient(135deg, #3498db, #2980b9);
+	border-color: #3498db;
+}
+
+/* Delete Button Styles */
+.btn-delete {
+	background: linear-gradient(135deg, var(--accent-color), #a93226);
+	color: var(--white);
+	border: 1px solid var(--accent-color);
+}
+
+.btn-delete:hover {
+	background: linear-gradient(135deg, #a93226, #922b21);
+	box-shadow: var(--shadow-soft);
 }
 
 /* Premium File Input */
