@@ -412,25 +412,26 @@ function processAmexExcel(excelData) {
 
         if (typeof row[0] === 'number') {
           // Excel serial date conversion
-          date = new Date(Math.round((row[0] - 25569) * 86400 * 1000));
-          date.setHours(12, 0, 0, 0);
+          date = new Date(Date.UTC(1900, 0, row[0] - 1, 12, 0, 0));
         } else {
-          const parts = dateStr.replace(/,/g, '').split(' '); // e.g., "17", "Jun.", "2025"
+          // Replace all dots and commas, and split by one or more whitespace characters
+          const parts = dateStr.replace(/[.,]/g, '').split(/\s+/);
+
           if (parts.length === 3 && parts[1].slice(0, 3) in monthMap) {
             const day = parseInt(parts[0]);
             const month = monthMap[parts[1].slice(0, 3)];
             const year = parseInt(parts[2]);
             if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-              date = new Date(year, month, day, 12, 0, 0);
+              date = new Date(Date.UTC(year, month, day, 12, 0, 0)); // Use UTC for consistency
             }
           } else {
             // Fallback for other string formats like YYYY-MM-DD
-            date = new Date(dateStr + 'T12:00:00');
+            date = new Date(dateStr + 'T12:00:00Z'); // Use ISO 8601 with Z for UTC
           }
         }
 
         if (!date || isNaN(date.getTime())) {
-          console.log(`Invalid date format in AMEX file: ${row[0]}`);
+          console.error(`AMEX Date Parse Fail: Original='${row[0]}'. Please check format.`);
           skipped++;
           continue;
         }
