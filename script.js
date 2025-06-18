@@ -417,21 +417,30 @@ function processAmexExcel(excelData) {
           // Replace all dots and commas, and split by one or more whitespace characters
           const parts = dateStr.replace(/[.,]/g, '').split(/\s+/);
 
+          console.log(`[AMEX Debug] Original: "${dateStr}", Cleaned Parts:`, parts);
+
           if (parts.length === 3 && parts[1].slice(0, 3) in monthMap) {
-            const day = parseInt(parts[0]);
-            const month = monthMap[parts[1].slice(0, 3)];
-            const year = parseInt(parts[2]);
-            if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-              date = new Date(Date.UTC(year, month, day, 12, 0, 0)); // Use UTC for consistency
+            const day = parseInt(parts[0], 10);
+            const monthKey = parts[1].slice(0, 3);
+            const month = monthMap[monthKey];
+            const year = parseInt(parts[2], 10);
+
+            console.log(`[AMEX Debug] Parsed -> Day: ${day}, MonthKey: "${monthKey}", Month: ${month}, Year: ${year}`);
+
+            if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+              date = new Date(Date.UTC(year, month, day, 12, 0, 0));
+              console.log(`[AMEX Debug] Successfully created Date:`, date.toUTCString());
+            } else {
+              console.error(`[AMEX Debug] Parsing of parts failed. day, month, or year is NaN or undefined.`);
             }
           } else {
-            // Fallback for other string formats like YYYY-MM-DD
-            date = new Date(dateStr + 'T12:00:00Z'); // Use ISO 8601 with Z for UTC
+            console.warn(`[AMEX Debug] Fallback to ISO parsing for: "${dateStr}"`);
+            date = new Date(dateStr + 'T12:00:00Z');
           }
         }
 
         if (!date || isNaN(date.getTime())) {
-          console.error(`AMEX Date Parse Fail: Original='${row[0]}'. Please check format.`);
+          console.error(`AMEX Date Parse Fail: Original='${row[0]}'. The final date object was invalid.`);
           skipped++;
           continue;
         }
