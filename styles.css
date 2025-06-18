@@ -266,8 +266,14 @@ input[type="file"]:hover {
 	color: var(--primary-color);
 }
 
+.total-amount.company-total {
+	color: var(--accent-color);
+	font-size: 1rem;
+	font-weight: 500;
+}
+
 /* Premium Grand Total */
-.grand-total {
+.grand-total-container {
 	text-align: center;
 	margin-top: 2rem;
 	padding: 1rem;
@@ -278,19 +284,45 @@ input[type="file"]:hover {
 	);
 	color: var(--white);
 	border-radius: var(--border-radius);
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.75rem;
+}
+
+.grand-total-item {
+	padding: 0.5rem;
+	border-radius: var(--border-radius-small);
+}
+
+.grand-total-item.personal {
+	background: rgba(255, 255, 255, 0.1);
+	font-size: 1.2rem;
+}
+
+.grand-total-item.company {
+	background: rgba(255, 255, 255, 0.1);
+	font-size: 1.2rem;
+	color: #f1c40f; /* Gold color for company total */
+}
+
+.grand-total-item.grand {
 	font-size: 1.5rem;
 	font-weight: bold;
+	margin-top: 0.5rem;
 }
 
-/* Premium Export */
-.export-container {
+/* Premium Export & Action Buttons */
+.actions-container {
 	display: flex;
 	justify-content: center;
+	align-items: center;
+	gap: 1rem;
 	margin: 40px 0;
+	flex-wrap: wrap;
 }
 
-.btn-export {
-	background: linear-gradient(135deg, var(--success-color) 0%, #1e8449 100%);
+.btn-export,
+.btn-danger {
 	color: var(--white);
 	padding: 16px 32px;
 	font-size: 1rem;
@@ -299,11 +331,25 @@ input[type="file"]:hover {
 	box-shadow: var(--shadow-medium);
 	text-transform: uppercase;
 	letter-spacing: 1px;
+	border: none;
 	transition: var(--transition);
+}
+
+.btn-export {
+	background: linear-gradient(135deg, var(--success-color) 0%, #1e8449 100%);
 }
 
 .btn-export:hover {
 	background: linear-gradient(135deg, #1e8449 0%, #196f3d 100%);
+	box-shadow: var(--shadow-strong);
+}
+
+.btn-danger {
+	background: linear-gradient(135deg, var(--accent-color), #922b21);
+}
+
+.btn-danger:hover {
+	background: linear-gradient(135deg, #922b21, #7b241c);
 	box-shadow: var(--shadow-strong);
 }
 

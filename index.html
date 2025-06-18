@@ -72,6 +72,9 @@
     <div class="total-amount">
       Total VISA Expenses: <span id="visaTotalAmount">0.00</span>
     </div>
+    <div class="total-amount company-total">
+      VISA Company Expenses: <span id="visaCompanyTotalAmount">0.00</span>
+    </div>
 
     <h2>AMEX Transactions</h2>
     <div class="date-filter-container">
@@ -100,6 +103,9 @@
     </table>
     <div class="total-amount">
       Total AMEX Expenses: <span id="amexTotalAmount">0.00</span>
+    </div>
+    <div class="total-amount company-total">
+      AMEX Company Expenses: <span id="amexCompanyTotalAmount">0.00</span>
     </div>
 
     <h2>ROGERS Transactions</h2>
@@ -130,6 +136,9 @@
     <div class="total-amount">
       Total ROGERS Expenses: <span id="rogersTotalAmount">0.00</span>
     </div>
+    <div class="total-amount company-total">
+      ROGERS Company Expenses: <span id="rogersCompanyTotalAmount">0.00</span>
+    </div>
 
     <h2>Manual Transactions</h2>
     <div class="sort-info">Sorted by Date (Newest First)</div>
@@ -151,13 +160,25 @@
     <div class="total-amount">
       Total Manual Expenses: <span id="manualTotalAmount">0.00</span>
     </div>
-
-    <div class="grand-total fade-in">
-      GRAND TOTAL: <span id="grandTotalAmount">0.00</span>
+    <div class="total-amount company-total">
+      Manual Company Expenses: <span id="manualCompanyTotalAmount">0.00</span>
     </div>
 
-    <div class="export-container">
+    <div class="grand-total-container fade-in">
+      <div class="grand-total-item personal">
+        Personal Total: <span id="personalGrandTotalAmount">0.00</span>
+      </div>
+      <div class="grand-total-item company">
+        Company Total: <span id="companyGrandTotalAmount">0.00</span>
+      </div>
+      <div class="grand-total-item grand">
+        GRAND TOTAL: <span id="grandTotalAmount">0.00</span>
+      </div>
+    </div>
+
+    <div class="actions-container">
       <button id="exportPdfBtn" class="btn-export">Export as PDF</button>
+      <button id="clearAllDataBtn" class="btn-danger">Clear All Data</button>
     </div>
   </div>
 

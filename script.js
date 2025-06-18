@@ -23,6 +23,15 @@ const rogersTotalAmountSpan = getElement('rogersTotalAmount');
 const manualTotalAmountSpan = getElement('manualTotalAmount');
 const grandTotalAmountSpan = getElement('grandTotalAmount');
 
+// Company Total Spans
+const visaCompanyTotalAmountSpan = getElement('visaCompanyTotalAmount');
+const amexCompanyTotalAmountSpan = getElement('amexCompanyTotalAmount');
+const rogersCompanyTotalAmountSpan = getElement('rogersCompanyTotalAmount');
+const manualCompanyTotalAmountSpan = getElement('manualCompanyTotalAmount');
+const personalGrandTotalAmountSpan = getElement('personalGrandTotalAmount');
+const companyGrandTotalAmountSpan = getElement('companyGrandTotalAmount');
+const clearAllDataBtn = getElement('clearAllDataBtn');
+
 // Manual entry form elements
 const manualDateInput = getElement('manualDate');
 const manualNameInput = getElement('manualName');
@@ -99,6 +108,9 @@ window.fixTables = function () {
 
 // Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
+  // Load data from localStorage first
+  loadTransactionsFromLocalStorage();
+
   // Initialize existing transactions
   initializeTransactions();
 
@@ -142,6 +154,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // PDF Export
   getElement('exportPdfBtn').addEventListener('click', exportToPdf);
+
+  // Other Actions
+  clearAllDataBtn.addEventListener('click', clearAllData);
 });
 
 // Promise-based file readers
@@ -167,6 +182,7 @@ async function handleFileUpload(e) {
     }
     renderTableWithFilters();
     updateGrandTotal();
+    saveTransactionsToLocalStorage();
   } catch (error) {
     console.error(`Error processing VISA file: ${error.message}`);
   }
@@ -187,6 +203,7 @@ async function handleAmexFileUpload(e) {
     }
     renderAmexTableWithFilters();
     updateGrandTotal();
+    saveTransactionsToLocalStorage();
   } catch (error) {
     console.error(`Error processing AMEX file: ${error.message}`);
   }
@@ -203,6 +220,7 @@ async function handleRogersFileUpload(e) {
     }
     renderRogersTableWithFilters();
     updateGrandTotal();
+    saveTransactionsToLocalStorage();
   } catch (error) {
     console.error(`Error processing ROGERS file: ${error.message}`);
   }
@@ -260,6 +278,7 @@ function handleAddManualTransaction() {
   manualTransactions.push(newTransaction);
   renderManualTable();
   updateGrandTotal();
+  saveTransactionsToLocalStorage();
   [manualDateInput, manualNameInput, manualExpenseInput].forEach(input => input.value = '');
 }
 
@@ -529,6 +548,7 @@ function processAmexExcel(excelData) {
   }
 
   updateAmexTotal(amexTransactions);
+  updateCompanyTotal(amexTransactions, amexCompanyTotalAmountSpan);
 }
 
 function processRogersCSV(csvContent) {
@@ -664,6 +684,7 @@ function processRogersCSV(csvContent) {
   }
 
   updateRogersTotal(rogersTransactions);
+  updateCompanyTotal(rogersTransactions, rogersCompanyTotalAmountSpan);
 }
 
 // --- RENDERING LOGIC ---
@@ -671,23 +692,27 @@ function renderTableWithFilters() {
   const transactionsToRender = filterTransactions(transactions, visaStartDateInput.value, visaEndDateInput.value);
   renderTable(tableBody, transactionsToRender, renderTransaction);
   updateTotal(transactionsToRender);
+  updateCompanyTotal(transactionsToRender, visaCompanyTotalAmountSpan);
 }
 
 function renderAmexTableWithFilters() {
   const transactionsToRender = filterTransactions(amexTransactions, amexStartDateInput.value, amexEndDateInput.value);
   renderTable(amexTableBody, transactionsToRender, renderAmexTransaction);
   updateAmexTotal(transactionsToRender);
+  updateCompanyTotal(transactionsToRender, amexCompanyTotalAmountSpan);
 }
 
 function renderRogersTableWithFilters() {
   const transactionsToRender = filterTransactions(rogersTransactions, rogersStartDateInput.value, rogersEndDateInput.value);
   renderTable(rogersTableBody, transactionsToRender, renderRogersTransaction);
   updateRogersTotal(transactionsToRender);
+  updateCompanyTotal(transactionsToRender, rogersCompanyTotalAmountSpan);
 }
 
 function renderManualTable() {
   renderTable(manualTableBody, manualTransactions, renderManualTransaction);
   updateManualTotal(manualTransactions);
+  updateCompanyTotal(manualTransactions, manualCompanyTotalAmountSpan);
 }
 
 function filterTransactions(source, startDateValue, endDateValue) {
@@ -772,6 +797,7 @@ function generalToggleSplit(id, transactionsArray, renderFn) {
   }
   renderFn();
   updateGrandTotal();
+  saveTransactionsToLocalStorage();
 }
 
 function generalToggleCompany(id, transactionsArray, renderFn) {
@@ -780,6 +806,7 @@ function generalToggleCompany(id, transactionsArray, renderFn) {
   transaction.isCompany = !transaction.isCompany;
   renderFn();
   updateGrandTotal();
+  saveTransactionsToLocalStorage();
 }
 
 function generalDelete(id, transactionsArray, renderFn, typeName) {
@@ -790,6 +817,7 @@ function generalDelete(id, transactionsArray, renderFn, typeName) {
     transactionsArray.splice(index, 1);
     renderFn();
     updateGrandTotal();
+    saveTransactionsToLocalStorage();
   }
 }
 
@@ -816,18 +844,26 @@ function updateAmexTotal(filtered) { amexTotalAmountSpan.textContent = formatCur
 function updateRogersTotal(filtered) { rogersTotalAmountSpan.textContent = formatCurrency(filtered.reduce((sum, t) => sum + t.expense, 0)); }
 function updateManualTotal(filtered) { manualTotalAmountSpan.textContent = formatCurrency(filtered.reduce((sum, t) => sum + t.expense, 0)); }
 
+function updateCompanyTotal(filtered, span) {
+  const companyTotal = filtered.filter(t => t.isCompany).reduce((sum, t) => sum + t.expense, 0);
+  span.textContent = formatCurrency(companyTotal);
+}
+
 function updateGrandTotal() {
-  const totals = [
-    totalAmountSpan, amexTotalAmountSpan, rogersTotalAmountSpan, manualTotalAmountSpan
-  ].map(span => parseFloat(span.textContent.replace(/[^0-9.-]+/g, "")) || 0);
-  const grandTotal = totals.reduce((sum, total) => sum + total, 0);
+  const allTransactions = [...transactions, ...amexTransactions, ...rogersTransactions, ...manualTransactions];
+
+  const personalTotal = allTransactions.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
+  const companyTotal = allTransactions.filter(t => t.isCompany).reduce((sum, t) => sum + t.expense, 0);
+  const grandTotal = allTransactions.reduce((sum, t) => sum + t.expense, 0);
+
+  personalGrandTotalAmountSpan.textContent = formatCurrency(personalTotal);
+  companyGrandTotalAmountSpan.textContent = formatCurrency(companyTotal);
   grandTotalAmountSpan.textContent = formatCurrency(grandTotal);
 }
 
 // --- PDF EXPORT ---
 function exportToPdf() {
   const { jsPDF } = window.jspdf;
-  const autoTable = window.jspdf.plugin.autotable;
   const doc = new jsPDF();
 
   const addTransactionTableToPdf = (title, transactions, totalSpan, startY) => {
@@ -843,7 +879,7 @@ function exportToPdf() {
     // Add personal transactions
     if (personalTransactions.length > 0) {
       doc.text('Personal Expenses:', 14, currentY);
-      autoTable(doc, {
+      doc.autoTable({
         head: [['Date', 'Name', 'Expenses', 'Split']],
         body: personalTransactions.map(t => [
           formatDate(t.date),
@@ -861,7 +897,7 @@ function exportToPdf() {
     // Add company transactions
     if (companyTransactions.length > 0) {
       doc.text('Company Expenses:', 14, currentY);
-      autoTable(doc, {
+      doc.autoTable({
         head: [['Date', 'Name', 'Expenses', 'Split']],
         body: companyTransactions.map(t => [
           formatDate(t.date),
@@ -909,4 +945,54 @@ function exportToPdf() {
   addTransactionTableToPdf('Manual Transactions', manualTransactions, manualTotalAmountSpan, currentY);
 
   doc.save(`Credit_Card_Expenses_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+// --- LOCALSTORAGE FUNCTIONS ---
+function saveTransactionsToLocalStorage() {
+  const dataToSave = {
+    transactions,
+    amexTransactions,
+    rogersTransactions,
+    manualTransactions,
+  };
+  localStorage.setItem('creditCardTransactions', JSON.stringify(dataToSave));
+  console.log('Transactions saved to localStorage.');
+}
+
+function loadTransactionsFromLocalStorage() {
+  const savedData = localStorage.getItem('creditCardTransactions');
+  if (savedData) {
+    console.log('Loading transactions from localStorage...');
+    const parsedData = JSON.parse(savedData);
+    // Ensure dates are converted back to Date objects
+    transactions = parsedData.transactions.map(t => ({ ...t, date: new Date(t.date) })) || [];
+    amexTransactions = parsedData.amexTransactions.map(t => ({ ...t, date: new Date(t.date) })) || [];
+    rogersTransactions = parsedData.rogersTransactions.map(t => ({ ...t, date: new Date(t.date) })) || [];
+    manualTransactions = parsedData.manualTransactions.map(t => ({ ...t, date: new Date(t.date) })) || [];
+    forceRefreshAllTables();
+  }
+}
+
+function clearAllData() {
+  const confirmation = confirm(
+    "⚠️ ARE YOU SURE? ⚠️\n\nThis will permanently delete ALL transactions from this page and your browser's storage.\n\nThis action cannot be undone."
+  );
+
+  if (confirmation) {
+    // Clear all transaction arrays
+    transactions = [];
+    amexTransactions = [];
+    rogersTransactions = [];
+    manualTransactions = [];
+
+    // Clear from localStorage
+    localStorage.removeItem('creditCardTransactions');
+    console.log('All transaction data cleared from arrays and localStorage.');
+
+    // Refresh UI
+    forceRefreshAllTables();
+    alert('All data has been cleared.');
+  } else {
+    console.log('Clear data action cancelled by user.');
+  }
 } 
