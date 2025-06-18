@@ -839,10 +839,10 @@ function deleteManualTransaction(id) { generalDelete(id, manualTransactions, ren
 
 
 // --- TOTALS & GRAND TOTAL ---
-function updateTotal(filtered) { totalAmountSpan.textContent = formatCurrency(filtered.reduce((sum, t) => sum + t.expense, 0)); }
-function updateAmexTotal(filtered) { amexTotalAmountSpan.textContent = formatCurrency(filtered.reduce((sum, t) => sum + t.expense, 0)); }
-function updateRogersTotal(filtered) { rogersTotalAmountSpan.textContent = formatCurrency(filtered.reduce((sum, t) => sum + t.expense, 0)); }
-function updateManualTotal(filtered) { manualTotalAmountSpan.textContent = formatCurrency(filtered.reduce((sum, t) => sum + t.expense, 0)); }
+function updateTotal(filtered) { totalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
+function updateAmexTotal(filtered) { amexTotalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
+function updateRogersTotal(filtered) { rogersTotalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
+function updateManualTotal(filtered) { manualTotalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
 
 function updateCompanyTotal(filtered, span) {
   const companyTotal = filtered.filter(t => t.isCompany).reduce((sum, t) => sum + t.expense, 0);
@@ -854,7 +854,7 @@ function updateGrandTotal() {
 
   const personalTotal = allTransactions.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
   const companyTotal = allTransactions.filter(t => t.isCompany).reduce((sum, t) => sum + t.expense, 0);
-  const grandTotal = allTransactions.reduce((sum, t) => sum + t.expense, 0);
+  const grandTotal = personalTotal + companyTotal;
 
   personalGrandTotalAmountSpan.textContent = formatCurrency(personalTotal);
   companyGrandTotalAmountSpan.textContent = formatCurrency(companyTotal);

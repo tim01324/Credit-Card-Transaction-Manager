@@ -274,41 +274,61 @@ input[type="file"]:hover {
 
 /* Premium Grand Total */
 .grand-total-container {
-	text-align: center;
-	margin-top: 2rem;
-	padding: 1rem;
-	background: linear-gradient(
-		135deg,
-		var(--primary-color),
-		var(--secondary-color)
-	);
-	color: var(--white);
+	text-align: right;
+	margin: 2rem 0;
+	padding: 1.5rem;
+	background: var(--light-bg);
+	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius);
 	display: grid;
-	grid-template-columns: 1fr;
-	gap: 0.75rem;
+	grid-template-areas:
+		"personal-label personal-value"
+		"company-label  company-value"
+		"grand-label    grand-value";
+	grid-template-columns: 1fr auto;
+	gap: 0.75rem 1.5rem;
+	align-items: center;
 }
 
 .grand-total-item {
-	padding: 0.5rem;
-	border-radius: var(--border-radius-small);
+	padding: 0;
+	background: none;
+	text-align: right;
 }
 
-.grand-total-item.personal {
-	background: rgba(255, 255, 255, 0.1);
+.grand-total-item.personal-label,
+.grand-total-item.company-label,
+.grand-total-item.grand-label {
+	text-align: right;
+	font-weight: 600;
+	color: var(--text-secondary);
+}
+
+.grand-total-item.personal-value {
+	grid-area: personal-value;
 	font-size: 1.2rem;
 }
-
-.grand-total-item.company {
-	background: rgba(255, 255, 255, 0.1);
+.grand-total-item.company-value {
+	grid-area: company-value;
 	font-size: 1.2rem;
-	color: #f1c40f; /* Gold color for company total */
+	color: var(--accent-color);
 }
-
-.grand-total-item.grand {
+.grand-total-item.grand-value {
+	grid-area: grand-value;
 	font-size: 1.5rem;
 	font-weight: bold;
-	margin-top: 0.5rem;
+	color: var(--primary-color);
+}
+
+.grand-total-item.personal-label {
+	grid-area: personal-label;
+}
+.grand-total-item.company-label {
+	grid-area: company-label;
+}
+.grand-total-item.grand-label {
+	grid-area: grand-label;
+	font-size: 1.3rem;
 }
 
 /* Premium Export & Action Buttons */
