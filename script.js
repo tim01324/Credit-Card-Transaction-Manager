@@ -172,8 +172,27 @@ function handleAddManualTransaction() {
     return; // Silently fail
   }
   const parts = dateValue.split('-');
-  const date = new Date(parts[0], parts[1] - 1, parts[2], 12); // Use noon to avoid timezone issues
+  if (parts.length !== 3) {
+    console.log('Invalid date format for manual transaction');
+    return; // Silently fail
+  }
+
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1; // JavaScript months are 0-indexed
+  const day = parseInt(parts[2]);
+
+  // Validate the date parts
+  if (isNaN(year) || isNaN(month) || isNaN(day) ||
+    year < 1900 || year > 2100 ||
+    month < 0 || month > 11 ||
+    day < 1 || day > 31) {
+    console.log('Invalid date values for manual transaction');
+    return; // Silently fail
+  }
+
+  const date = new Date(year, month, day, 12, 0, 0); // Use noon to avoid timezone issues
   if (isNaN(date.getTime())) {
+    console.log('Failed to create date for manual transaction');
     return; // Silently fail
   }
 
@@ -183,6 +202,9 @@ function handleAddManualTransaction() {
     originalExpense: expense,
     isSplit: false
   };
+
+  console.log(`Adding MANUAL transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Name: ${name}, Amount: ${formatCurrency(expense)}`);
+
   manualTransactions.push(newTransaction);
   renderManualTable();
   updateGrandTotal();
@@ -206,18 +228,32 @@ function processCSV(csvContent) {
         continue;
       }
 
-      // Parse date
+      // Parse date with enhanced validation
       let date = null;
-      if (columns[0].includes('/')) {
-        const parts = columns[0].trim().split('/');
+      const dateStr = columns[0].trim();
+
+      if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
         if (parts.length >= 3) {
-          date = new Date(parts[2], parts[0] - 1, parts[1]);
+          const month = parseInt(parts[0]) - 1; // JavaScript months are 0-indexed
+          const day = parseInt(parts[1]);
+          const year = parseInt(parts[2]);
+
+          // Validate the date parts
+          if (!isNaN(year) && !isNaN(month) && !isNaN(day) &&
+            year >= 1900 && year <= 2100 &&
+            month >= 0 && month <= 11 &&
+            day >= 1 && day <= 31) {
+            date = new Date(year, month, day, 12, 0, 0);
+          }
         }
       } else {
-        date = new Date(columns[0].trim());
+        // Fallback for other date formats
+        date = new Date(dateStr + 'T12:00:00');
       }
 
-      if (isNaN(date.getTime())) {
+      if (!date || isNaN(date.getTime())) {
+        console.log(`Invalid date format in VISA file: ${dateStr}`);
         skipped++;
         continue;
       }
@@ -236,22 +272,29 @@ function processCSV(csvContent) {
         continue;
       }
 
-      // Check for duplicate
-      const isDuplicate = transactions.some(t =>
-        t.date.toDateString() === date.toDateString() &&
-        t.name === name &&
-        Math.abs(t.originalExpense - expense) < 0.01
-      );
+      // Check for duplicate with more robust comparison
+      const isDuplicate = transactions.some(t => {
+        const sameDate = t.date.getFullYear() === date.getFullYear() &&
+          t.date.getMonth() === date.getMonth() &&
+          t.date.getDate() === date.getDate();
+        const sameName = t.name === name;
+        const sameAmount = Math.abs(t.originalExpense - expense) < 0.01;
+        return sameDate && sameName && sameAmount;
+      });
 
       if (!isDuplicate) {
-        transactions.push({
+        const newTransaction = {
           id: Date.now() + '_' + Math.random().toString(36).substring(2, 9),
           date: date,
           name: name,
           expense: expense,
           originalExpense: expense,
           isSplit: false
-        });
+        };
+
+        console.log(`Adding VISA transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Name: ${name}, Amount: ${formatCurrency(expense)}`);
+
+        transactions.push(newTransaction);
         processed++;
       } else {
         console.log(`Duplicate VISA transaction skipped: ${formatDate(date)}, ${name}, ${formatCurrency(expense)}`);
@@ -283,15 +326,21 @@ function processAmexExcel(excelData) {
     }
 
     try {
-      // Parse date
+      // Parse date with enhanced validation
       let date = null;
       if (row[0]) {
         if (typeof row[0] === 'number') {
+          // Excel serial date conversion
           date = new Date(Math.round((row[0] - 25569) * 86400 * 1000));
+          // Set time to noon to avoid timezone issues
+          date.setHours(12, 0, 0, 0);
         } else {
-          date = new Date(String(row[0]).trim());
+          const dateStr = String(row[0]).trim();
+          date = new Date(dateStr + 'T12:00:00');
         }
-        if (isNaN(date.getTime())) {
+
+        if (!date || isNaN(date.getTime())) {
+          console.log(`Invalid date format in AMEX file: ${row[0]}`);
           skipped++;
           continue;
         }
@@ -333,22 +382,29 @@ function processAmexExcel(excelData) {
 
       expense = Math.abs(expense);
 
-      // Check for duplicate
-      const isDuplicate = amexTransactions.some(t =>
-        t.date.toDateString() === date.toDateString() &&
-        t.name === name &&
-        Math.abs(t.originalExpense - expense) < 0.01
-      );
+      // Check for duplicate with more robust comparison
+      const isDuplicate = amexTransactions.some(t => {
+        const sameDate = t.date.getFullYear() === date.getFullYear() &&
+          t.date.getMonth() === date.getMonth() &&
+          t.date.getDate() === date.getDate();
+        const sameName = t.name === name;
+        const sameAmount = Math.abs(t.originalExpense - expense) < 0.01;
+        return sameDate && sameName && sameAmount;
+      });
 
       if (!isDuplicate) {
-        amexTransactions.push({
+        const newTransaction = {
           id: 'amex_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9),
           date: date,
           name: name,
           expense: expense,
           originalExpense: expense,
           isSplit: false
-        });
+        };
+
+        console.log(`Adding AMEX transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Name: ${name}, Amount: ${formatCurrency(expense)}`);
+
+        amexTransactions.push(newTransaction);
         processed++;
       } else {
         console.log(`Duplicate AMEX transaction skipped: ${formatDate(date)}, ${name}, ${formatCurrency(expense)}`);
