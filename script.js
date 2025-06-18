@@ -665,60 +665,37 @@ function renderTable(tbody, transactions, renderRowFunction) {
 
 // --- INDIVIDUAL ROW RENDERERS ---
 function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, deleteFn) {
-  // Ensure backward compatibility for existing transactions
+  // 確保向後兼容
   if (typeof transaction.isCompany !== 'boolean') {
     transaction.isCompany = false;
   }
 
   const row = document.createElement('tr');
 
-  // 1. Date Cell
-  const dateCell = document.createElement('td');
-  dateCell.textContent = formatDate(transaction.date);
-  row.appendChild(dateCell);
+  // 創建所有單元格
+  const dateCell = `<td>${formatDate(transaction.date)}</td>`;
+  const nameCell = `<td title="${transaction.name}">${transaction.name}</td>`;
+  const expenseCell = `<td style="font-weight: bold; color: ${transaction.isSplit ? 'var(--success-color)' : 'inherit'};">${formatCurrency(transaction.expense)}</td>`;
 
-  // 2. Name Cell
-  const nameCell = document.createElement('td');
-  nameCell.textContent = transaction.name;
-  nameCell.title = transaction.name;
-  row.appendChild(nameCell);
+  // 創建按鈕
+  const splitButton = `<button class="btn-split ${transaction.isSplit ? 'active' : ''}" title="${transaction.isSplit ? 'Remove split' : 'Split expense'}">P</button>`;
+  const companyButton = `<button class="btn-company ${transaction.isCompany ? 'active' : ''}" title="${transaction.isCompany ? 'Remove company expense' : 'Mark as company expense'}">C</button>`;
+  const deleteButton = `<button class="btn-delete" title="Delete transaction">Delete</button>`;
 
-  // 3. Expense Cell
-  const expenseCell = document.createElement('td');
-  expenseCell.textContent = formatCurrency(transaction.expense);
-  expenseCell.style.fontWeight = 'bold';
-  expenseCell.style.color = transaction.isSplit ? 'var(--success-color)' : 'inherit';
-  row.appendChild(expenseCell);
+  // 組合HTML
+  row.innerHTML = `
+      ${dateCell}
+      ${nameCell}
+      ${expenseCell}
+      <td>${splitButton}</td>
+      <td>${companyButton}</td>
+      <td>${deleteButton}</td>
+  `;
 
-  // 4. Split Button Cell
-  const splitCell = document.createElement('td');
-  const splitBtn = document.createElement('button');
-  splitBtn.className = `btn-split ${transaction.isSplit ? 'active' : ''}`;
-  splitBtn.title = transaction.isSplit ? 'Remove split' : 'Split expense';
-  splitBtn.textContent = 'P';
-  splitBtn.onclick = () => toggleSplitFn(transaction.id);
-  splitCell.appendChild(splitBtn);
-  row.appendChild(splitCell);
-
-  // 5. Company Button Cell
-  const companyCell = document.createElement('td');
-  const companyBtn = document.createElement('button');
-  companyBtn.className = `btn-company ${transaction.isCompany ? 'active' : ''}`;
-  companyBtn.title = transaction.isCompany ? 'Remove company expense' : 'Mark as company expense';
-  companyBtn.textContent = 'C';
-  companyBtn.onclick = () => toggleCompanyFn(transaction.id);
-  companyCell.appendChild(companyBtn);
-  row.appendChild(companyCell);
-
-  // 6. Delete Button Cell
-  const deleteCell = document.createElement('td');
-  const deleteBtn = document.createElement('button');
-  deleteBtn.className = 'btn-delete';
-  deleteBtn.title = 'Delete transaction';
-  deleteBtn.textContent = 'Delete';
-  deleteBtn.onclick = () => deleteFn(transaction.id);
-  deleteCell.appendChild(deleteBtn);
-  row.appendChild(deleteCell);
+  // 綁定事件
+  row.querySelector('.btn-split').onclick = () => toggleSplitFn(transaction.id);
+  row.querySelector('.btn-company').onclick = () => toggleCompanyFn(transaction.id);
+  row.querySelector('.btn-delete').onclick = () => deleteFn(transaction.id);
 
   return row;
 }
