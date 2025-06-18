@@ -839,10 +839,22 @@ function deleteManualTransaction(id) { generalDelete(id, manualTransactions, ren
 
 
 // --- TOTALS & GRAND TOTAL ---
-function updateTotal(filtered) { totalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
-function updateAmexTotal(filtered) { amexTotalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
-function updateRogersTotal(filtered) { rogersTotalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
-function updateManualTotal(filtered) { manualTotalAmountSpan.textContent = formatCurrency(filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0)); }
+function updateTotal(filtered) {
+  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
+  totalAmountSpan.textContent = formatCurrency(personalTotal);
+}
+function updateAmexTotal(filtered) {
+  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
+  amexTotalAmountSpan.textContent = formatCurrency(personalTotal);
+}
+function updateRogersTotal(filtered) {
+  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
+  rogersTotalAmountSpan.textContent = formatCurrency(personalTotal);
+}
+function updateManualTotal(filtered) {
+  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
+  manualTotalAmountSpan.textContent = formatCurrency(personalTotal);
+}
 
 function updateCompanyTotal(filtered, span) {
   const companyTotal = filtered.filter(t => t.isCompany).reduce((sum, t) => sum + t.expense, 0);
@@ -850,14 +862,27 @@ function updateCompanyTotal(filtered, span) {
 }
 
 function updateGrandTotal() {
-  const allTransactions = [...transactions, ...amexTransactions, ...rogersTransactions, ...manualTransactions];
+  // We get the totals directly from the displayed text content for simplicity and consistency.
+  const parseCurrency = (text) => parseFloat(text.replace(/[^0-9.-]+/g, "")) || 0;
 
-  const personalTotal = allTransactions.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
-  const companyTotal = allTransactions.filter(t => t.isCompany).reduce((sum, t) => sum + t.expense, 0);
-  const grandTotal = personalTotal + companyTotal;
+  const visaPersonal = parseCurrency(totalAmountSpan.textContent);
+  const visaCompany = parseCurrency(visaCompanyTotalAmountSpan.textContent);
 
-  personalGrandTotalAmountSpan.textContent = formatCurrency(personalTotal);
-  companyGrandTotalAmountSpan.textContent = formatCurrency(companyTotal);
+  const amexPersonal = parseCurrency(amexTotalAmountSpan.textContent);
+  const amexCompany = parseCurrency(amexCompanyTotalAmountSpan.textContent);
+
+  const rogersPersonal = parseCurrency(rogersTotalAmountSpan.textContent);
+  const rogersCompany = parseCurrency(rogersCompanyTotalAmountSpan.textContent);
+
+  const manualPersonal = parseCurrency(manualTotalAmountSpan.textContent);
+  const manualCompany = parseCurrency(manualCompanyTotalAmountSpan.textContent);
+
+  const totalPersonal = visaPersonal + amexPersonal + rogersPersonal + manualPersonal;
+  const totalCompany = visaCompany + amexCompany + rogersCompany + manualCompany;
+  const grandTotal = totalPersonal + totalCompany;
+
+  personalGrandTotalAmountSpan.textContent = formatCurrency(totalPersonal);
+  companyGrandTotalAmountSpan.textContent = formatCurrency(totalCompany);
   grandTotalAmountSpan.textContent = formatCurrency(grandTotal);
 }
 

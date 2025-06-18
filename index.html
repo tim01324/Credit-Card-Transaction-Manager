@@ -164,27 +164,26 @@
       Manual Company Expenses: <span id="manualCompanyTotalAmount">0.00</span>
     </div>
 
-    <div class="grand-total-container fade-in">
-      <div class="grand-total-item personal-label">Personal Total:</div>
-      <div class="grand-total-item personal-value">
-        <span id="personalGrandTotalAmount">0.00</span>
+    <footer class="footer-container">
+      <div class="summary-container">
+        <div class="summary-item">
+          <span class="summary-label">Personal</span>
+          <span id="personalGrandTotalAmount" class="summary-value personal-color">0.00</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Company</span>
+          <span id="companyGrandTotalAmount" class="summary-value company-color">0.00</span>
+        </div>
+        <div class="summary-item grand-total">
+          <span class="summary-label">Grand Total</span>
+          <span id="grandTotalAmount" class="summary-value">0.00</span>
+        </div>
       </div>
-
-      <div class="grand-total-item company-label">Company Total:</div>
-      <div class="grand-total-item company-value">
-        <span id="companyGrandTotalAmount">0.00</span>
+      <div class="actions-container">
+        <button id="exportPdfBtn" class="btn-export">Export as PDF</button>
+        <button id="clearAllDataBtn" class="btn-danger">Clear All Data</button>
       </div>
-
-      <div class="grand-total-item grand-label">GRAND TOTAL:</div>
-      <div class="grand-total-item grand-value">
-        <span id="grandTotalAmount">0.00</span>
-      </div>
-    </div>
-
-    <div class="actions-container">
-      <button id="exportPdfBtn" class="btn-export">Export as PDF</button>
-      <button id="clearAllDataBtn" class="btn-danger">Clear All Data</button>
-    </div>
+    </footer>
   </div>
 
   <!-- External JavaScript -->

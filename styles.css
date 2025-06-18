@@ -272,75 +272,62 @@ input[type="file"]:hover {
 	font-weight: 500;
 }
 
-/* Premium Grand Total */
-.grand-total-container {
-	text-align: right;
-	margin: 2rem 0;
-	padding: 1.5rem;
-	background: var(--light-bg);
-	border: 1px solid var(--border-color);
-	border-radius: var(--border-radius);
-	display: grid;
-	grid-template-areas:
-		"personal-label personal-value"
-		"company-label  company-value"
-		"grand-label    grand-value";
-	grid-template-columns: 1fr auto;
-	gap: 0.75rem 1.5rem;
+/* Footer & Summary Styling */
+.footer-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
 	align-items: center;
+	margin-top: 2rem;
+	padding: 1rem 1.5rem;
+	background: var(--white);
+	border-radius: var(--border-radius);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-medium);
 }
 
-.grand-total-item {
-	padding: 0;
-	background: none;
-	text-align: right;
+.summary-container {
+	display: flex;
+	gap: 2rem;
+	flex-grow: 1;
 }
 
-.grand-total-item.personal-label,
-.grand-total-item.company-label,
-.grand-total-item.grand-label {
-	text-align: right;
-	font-weight: 600;
-	color: var(--text-secondary);
+.summary-item {
+	display: flex;
+	flex-direction: column;
 }
 
-.grand-total-item.personal-value {
-	grid-area: personal-value;
-	font-size: 1.2rem;
+.summary-label {
+	font-size: 0.8rem;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	margin-bottom: 0.25rem;
 }
-.grand-total-item.company-value {
-	grid-area: company-value;
-	font-size: 1.2rem;
-	color: var(--accent-color);
-}
-.grand-total-item.grand-value {
-	grid-area: grand-value;
+
+.summary-value {
 	font-size: 1.5rem;
-	font-weight: bold;
+	font-weight: 600;
 	color: var(--primary-color);
 }
 
-.grand-total-item.personal-label {
-	grid-area: personal-label;
+.summary-value.personal-color {
+	color: var(--success-color);
 }
-.grand-total-item.company-label {
-	grid-area: company-label;
+
+.summary-value.company-color {
+	color: var(--accent-color);
 }
-.grand-total-item.grand-label {
-	grid-area: grand-label;
-	font-size: 1.3rem;
+
+.grand-total .summary-value {
+	font-size: 1.8rem;
+	font-weight: 700;
+}
+
+.actions-container {
+	margin: 0;
 }
 
 /* Premium Export & Action Buttons */
-.actions-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: 1rem;
-	margin: 40px 0;
-	flex-wrap: wrap;
-}
-
 .btn-export,
 .btn-danger {
 	color: var(--white);
