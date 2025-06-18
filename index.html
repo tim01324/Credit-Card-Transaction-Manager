@@ -72,7 +72,7 @@
     <div class="total-amount">
       Total VISA Expenses: <span id="visaTotalAmount">0.00</span>
     </div>
-    <div class="total-amount company-total">
+    <div class="total-amount company-total" id="visaCompanyTotalContainer">
       VISA Company Expenses: <span id="visaCompanyTotalAmount">0.00</span>
     </div>
 
@@ -104,7 +104,7 @@
     <div class="total-amount">
       Total AMEX Expenses: <span id="amexTotalAmount">0.00</span>
     </div>
-    <div class="total-amount company-total">
+    <div class="total-amount company-total" id="amexCompanyTotalContainer">
       AMEX Company Expenses: <span id="amexCompanyTotalAmount">0.00</span>
     </div>
 
@@ -136,7 +136,7 @@
     <div class="total-amount">
       Total ROGERS Expenses: <span id="rogersTotalAmount">0.00</span>
     </div>
-    <div class="total-amount company-total">
+    <div class="total-amount company-total" id="rogersCompanyTotalContainer">
       ROGERS Company Expenses: <span id="rogersCompanyTotalAmount">0.00</span>
     </div>
 
@@ -160,23 +160,19 @@
     <div class="total-amount">
       Total Manual Expenses: <span id="manualTotalAmount">0.00</span>
     </div>
-    <div class="total-amount company-total">
+    <div class="total-amount company-total" id="manualCompanyTotalContainer">
       Manual Company Expenses: <span id="manualCompanyTotalAmount">0.00</span>
     </div>
 
     <footer class="footer-container">
       <div class="summary-container">
-        <div class="summary-item">
-          <span class="summary-label">Personal</span>
-          <span id="personalGrandTotalAmount" class="summary-value personal-color">0.00</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Company</span>
-          <span id="companyGrandTotalAmount" class="summary-value company-color">0.00</span>
-        </div>
         <div class="summary-item grand-total">
           <span class="summary-label">Grand Total</span>
           <span id="grandTotalAmount" class="summary-value">0.00</span>
+        </div>
+        <div class="summary-item" id="companyGrandTotalContainer">
+          <span class="summary-label">Company Total</span>
+          <span id="companyGrandTotalAmount" class="summary-value company-color">0.00</span>
         </div>
       </div>
       <div class="actions-container">

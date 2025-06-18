@@ -28,7 +28,6 @@ const visaCompanyTotalAmountSpan = getElement('visaCompanyTotalAmount');
 const amexCompanyTotalAmountSpan = getElement('amexCompanyTotalAmount');
 const rogersCompanyTotalAmountSpan = getElement('rogersCompanyTotalAmount');
 const manualCompanyTotalAmountSpan = getElement('manualCompanyTotalAmount');
-const personalGrandTotalAmountSpan = getElement('personalGrandTotalAmount');
 const companyGrandTotalAmountSpan = getElement('companyGrandTotalAmount');
 const clearAllDataBtn = getElement('clearAllDataBtn');
 
@@ -802,11 +801,12 @@ function generalToggleSplit(id, transactionsArray, renderFn) {
 
 function generalToggleCompany(id, transactionsArray, renderFn) {
   const transaction = transactionsArray.find(t => t.id === id);
-  if (!transaction) return;
-  transaction.isCompany = !transaction.isCompany;
-  renderFn();
-  updateGrandTotal();
-  saveTransactionsToLocalStorage();
+  if (transaction) {
+    transaction.isCompany = !transaction.isCompany;
+    renderFn();
+    updateGrandTotal();
+    saveTransactionsToLocalStorage();
+  }
 }
 
 function generalDelete(id, transactionsArray, renderFn, typeName) {
@@ -840,20 +840,20 @@ function deleteManualTransaction(id) { generalDelete(id, manualTransactions, ren
 
 // --- TOTALS & GRAND TOTAL ---
 function updateTotal(filtered) {
-  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
-  totalAmountSpan.textContent = formatCurrency(personalTotal);
+  const total = filtered.reduce((sum, t) => sum + t.expense, 0);
+  totalAmountSpan.textContent = formatCurrency(total);
 }
 function updateAmexTotal(filtered) {
-  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
-  amexTotalAmountSpan.textContent = formatCurrency(personalTotal);
+  const total = filtered.reduce((sum, t) => sum + t.expense, 0);
+  amexTotalAmountSpan.textContent = formatCurrency(total);
 }
 function updateRogersTotal(filtered) {
-  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
-  rogersTotalAmountSpan.textContent = formatCurrency(personalTotal);
+  const total = filtered.reduce((sum, t) => sum + t.expense, 0);
+  rogersTotalAmountSpan.textContent = formatCurrency(total);
 }
 function updateManualTotal(filtered) {
-  const personalTotal = filtered.filter(t => !t.isCompany).reduce((sum, t) => sum + t.expense, 0);
-  manualTotalAmountSpan.textContent = formatCurrency(personalTotal);
+  const total = filtered.reduce((sum, t) => sum + t.expense, 0);
+  manualTotalAmountSpan.textContent = formatCurrency(total);
 }
 
 function updateCompanyTotal(filtered, span) {
@@ -861,29 +861,58 @@ function updateCompanyTotal(filtered, span) {
   span.textContent = formatCurrency(companyTotal);
 }
 
+function updateCompanyTotalVisibility() {
+  // Check if any transaction is marked as company
+  const hasCompanyTransactions =
+    transactions.some(t => t.isCompany) ||
+    amexTransactions.some(t => t.isCompany) ||
+    rogersTransactions.some(t => t.isCompany) ||
+    manualTransactions.some(t => t.isCompany);
+
+  // Show/hide individual company total containers
+  const visaContainer = document.getElementById('visaCompanyTotalContainer');
+  const amexContainer = document.getElementById('amexCompanyTotalContainer');
+  const rogersContainer = document.getElementById('rogersCompanyTotalContainer');
+  const manualContainer = document.getElementById('manualCompanyTotalContainer');
+  const grandContainer = document.getElementById('companyGrandTotalContainer');
+
+  if (hasCompanyTransactions) {
+    visaContainer.style.display = transactions.some(t => t.isCompany) ? 'block' : 'none';
+    amexContainer.style.display = amexTransactions.some(t => t.isCompany) ? 'block' : 'none';
+    rogersContainer.style.display = rogersTransactions.some(t => t.isCompany) ? 'block' : 'none';
+    manualContainer.style.display = manualTransactions.some(t => t.isCompany) ? 'block' : 'none';
+    grandContainer.style.display = 'block';
+  } else {
+    visaContainer.style.display = 'none';
+    amexContainer.style.display = 'none';
+    rogersContainer.style.display = 'none';
+    manualContainer.style.display = 'none';
+    grandContainer.style.display = 'none';
+  }
+}
+
 function updateGrandTotal() {
   // We get the totals directly from the displayed text content for simplicity and consistency.
   const parseCurrency = (text) => parseFloat(text.replace(/[^0-9.-]+/g, "")) || 0;
 
-  const visaPersonal = parseCurrency(totalAmountSpan.textContent);
+  const visaTotal = parseCurrency(totalAmountSpan.textContent);
+  const amexTotal = parseCurrency(amexTotalAmountSpan.textContent);
+  const rogersTotal = parseCurrency(rogersTotalAmountSpan.textContent);
+  const manualTotal = parseCurrency(manualTotalAmountSpan.textContent);
+
   const visaCompany = parseCurrency(visaCompanyTotalAmountSpan.textContent);
-
-  const amexPersonal = parseCurrency(amexTotalAmountSpan.textContent);
   const amexCompany = parseCurrency(amexCompanyTotalAmountSpan.textContent);
-
-  const rogersPersonal = parseCurrency(rogersTotalAmountSpan.textContent);
   const rogersCompany = parseCurrency(rogersCompanyTotalAmountSpan.textContent);
-
-  const manualPersonal = parseCurrency(manualTotalAmountSpan.textContent);
   const manualCompany = parseCurrency(manualCompanyTotalAmountSpan.textContent);
 
-  const totalPersonal = visaPersonal + amexPersonal + rogersPersonal + manualPersonal;
+  const grandTotal = visaTotal + amexTotal + rogersTotal + manualTotal;
   const totalCompany = visaCompany + amexCompany + rogersCompany + manualCompany;
-  const grandTotal = totalPersonal + totalCompany;
 
-  personalGrandTotalAmountSpan.textContent = formatCurrency(totalPersonal);
-  companyGrandTotalAmountSpan.textContent = formatCurrency(totalCompany);
   grandTotalAmountSpan.textContent = formatCurrency(grandTotal);
+  companyGrandTotalAmountSpan.textContent = formatCurrency(totalCompany);
+
+  // Update company total visibility
+  updateCompanyTotalVisibility();
 }
 
 // --- PDF EXPORT ---

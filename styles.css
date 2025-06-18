@@ -484,3 +484,16 @@ input[type="file"]:hover {
 	padding: 0.75rem 1rem;
 	font-size: 0.9rem;
 }
+
+/* Company total containers - hidden by default */
+#visaCompanyTotalContainer,
+#amexCompanyTotalContainer,
+#rogersCompanyTotalContainer,
+#manualCompanyTotalContainer,
+#companyGrandTotalContainer {
+	display: none;
+}
+
+.company-total.show {
+	display: block;
+}
