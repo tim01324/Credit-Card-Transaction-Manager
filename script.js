@@ -405,14 +405,27 @@ function processRogersCSV(csvContent) {
       // Parse date (YYYY-MM-DD) from column A
       let date = null;
       if (columns[0]) {
-        const dateParts = columns[0].split('-');
+        const dateStr = columns[0].trim();
+        const dateParts = dateStr.split('-');
         if (dateParts.length === 3) {
-          date = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]), 12, 0, 0);
+          const year = parseInt(dateParts[0]);
+          const month = parseInt(dateParts[1]) - 1; // JavaScript months are 0-indexed
+          const day = parseInt(dateParts[2]);
+
+          // Validate the date parts
+          if (!isNaN(year) && !isNaN(month) && !isNaN(day) &&
+            year >= 1900 && year <= 2100 &&
+            month >= 0 && month <= 11 &&
+            day >= 1 && day <= 31) {
+            date = new Date(year, month, day, 12, 0, 0);
+          }
         } else {
-          date = new Date(columns[0] + 'T12:00:00');
+          // Fallback for other date formats
+          date = new Date(dateStr + 'T12:00:00');
         }
 
-        if (isNaN(date.getTime())) {
+        if (!date || isNaN(date.getTime())) {
+          console.log(`Invalid date format in ROGERS file: ${dateStr}`);
           skipped++;
           continue;
         }
@@ -447,22 +460,29 @@ function processRogersCSV(csvContent) {
         expense = 0;
       }
 
-      // Check for duplicate
-      const isDuplicate = rogersTransactions.some(t =>
-        t.date.toDateString() === date.toDateString() &&
-        t.name === merchantName &&
-        Math.abs(t.originalExpense - expense) < 0.01
-      );
+      // Check for duplicate with more robust comparison
+      const isDuplicate = rogersTransactions.some(t => {
+        const sameDate = t.date.getFullYear() === date.getFullYear() &&
+          t.date.getMonth() === date.getMonth() &&
+          t.date.getDate() === date.getDate();
+        const sameName = t.name === merchantName;
+        const sameAmount = Math.abs(t.originalExpense - expense) < 0.01;
+        return sameDate && sameName && sameAmount;
+      });
 
       if (!isDuplicate) {
-        rogersTransactions.push({
+        const newTransaction = {
           id: 'rogers_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9),
           date: date,
           name: merchantName,
           expense: expense,
           originalExpense: expense,
           isSplit: false
-        });
+        };
+
+        console.log(`Adding ROGERS transaction: Date: ${formatDate(date)} (${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}), Merchant: ${merchantName}, Amount: ${formatCurrency(expense)}`);
+
+        rogersTransactions.push(newTransaction);
         processed++;
       } else {
         console.log(`Duplicate ROGERS transaction skipped: ${formatDate(date)}, ${merchantName}, ${formatCurrency(expense)}`);
