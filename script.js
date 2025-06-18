@@ -79,28 +79,22 @@ function forceRefreshAllTables() {
 
 // Global debug function - can be called from browser console
 window.fixTables = function () {
-  console.log('Manual table fix initiated...');
-  console.log('Current transactions:', {
-    visa: transactions.length,
-    amex: amexTransactions.length,
-    rogers: rogersTransactions.length,
-    manual: manualTransactions.length
-  });
+  console.log('--- Manual Table Fix Initiated ---');
 
   // Force add isCompany to all transactions
   [transactions, amexTransactions, rogersTransactions, manualTransactions].forEach((arr, index) => {
     const names = ['VISA', 'AMEX', 'ROGERS', 'MANUAL'];
-    console.log(`Fixing ${names[index]} transactions...`);
+    console.log(`Fixing ${arr.length} ${names[index]} transactions...`);
     arr.forEach(t => {
-      if (t.isCompany === undefined) {
+      if (typeof t.isCompany !== 'boolean') {
         t.isCompany = false;
-        console.log(`Added isCompany to ${t.name}`);
+        console.log(` -> Added 'isCompany' to: ${t.name}`);
       }
     });
   });
 
   forceRefreshAllTables();
-  console.log('Manual fix complete! Please check your tables now.');
+  console.log('--- Manual Fix Complete! Please check your tables now. ---');
 };
 
 // Initialize event listeners when DOM is loaded
@@ -672,27 +666,31 @@ function renderTable(tbody, transactions, renderRowFunction) {
 // --- INDIVIDUAL ROW RENDERERS ---
 function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, deleteFn) {
   // Ensure backward compatibility for existing transactions
-  if (transaction.isCompany === undefined) {
+  if (typeof transaction.isCompany !== 'boolean') {
     transaction.isCompany = false;
   }
 
-  console.log(`Creating row for: ${transaction.name}, isCompany: ${transaction.isCompany}`);
-
   const row = document.createElement('tr');
 
-  // Create cells individually to ensure proper structure
+  // 1. Date Cell
   const dateCell = document.createElement('td');
   dateCell.textContent = formatDate(transaction.date);
+  row.appendChild(dateCell);
 
+  // 2. Name Cell
   const nameCell = document.createElement('td');
   nameCell.textContent = transaction.name;
   nameCell.title = transaction.name;
+  row.appendChild(nameCell);
 
+  // 3. Expense Cell
   const expenseCell = document.createElement('td');
   expenseCell.textContent = formatCurrency(transaction.expense);
   expenseCell.style.fontWeight = 'bold';
   expenseCell.style.color = transaction.isSplit ? 'var(--success-color)' : 'inherit';
+  row.appendChild(expenseCell);
 
+  // 4. Split Button Cell
   const splitCell = document.createElement('td');
   const splitBtn = document.createElement('button');
   splitBtn.className = `btn-split ${transaction.isSplit ? 'active' : ''}`;
@@ -700,7 +698,9 @@ function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, delet
   splitBtn.textContent = 'P';
   splitBtn.onclick = () => toggleSplitFn(transaction.id);
   splitCell.appendChild(splitBtn);
+  row.appendChild(splitCell);
 
+  // 5. Company Button Cell
   const companyCell = document.createElement('td');
   const companyBtn = document.createElement('button');
   companyBtn.className = `btn-company ${transaction.isCompany ? 'active' : ''}`;
@@ -708,7 +708,9 @@ function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, delet
   companyBtn.textContent = 'C';
   companyBtn.onclick = () => toggleCompanyFn(transaction.id);
   companyCell.appendChild(companyBtn);
+  row.appendChild(companyCell);
 
+  // 6. Delete Button Cell
   const deleteCell = document.createElement('td');
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'btn-delete';
@@ -716,12 +718,6 @@ function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, delet
   deleteBtn.textContent = 'Delete';
   deleteBtn.onclick = () => deleteFn(transaction.id);
   deleteCell.appendChild(deleteBtn);
-
-  row.appendChild(dateCell);
-  row.appendChild(nameCell);
-  row.appendChild(expenseCell);
-  row.appendChild(splitCell);
-  row.appendChild(companyCell);
   row.appendChild(deleteCell);
 
   return row;
