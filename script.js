@@ -65,10 +65,53 @@ function initializeTransactions() {
   });
 }
 
+// Force refresh all tables
+function forceRefreshAllTables() {
+  console.log('Forcing refresh of all tables...');
+  initializeTransactions();
+  renderTableWithFilters();
+  renderAmexTableWithFilters();
+  renderRogersTableWithFilters();
+  renderManualTable();
+  updateGrandTotal();
+  console.log('All tables refreshed!');
+}
+
+// Global debug function - can be called from browser console
+window.fixTables = function () {
+  console.log('Manual table fix initiated...');
+  console.log('Current transactions:', {
+    visa: transactions.length,
+    amex: amexTransactions.length,
+    rogers: rogersTransactions.length,
+    manual: manualTransactions.length
+  });
+
+  // Force add isCompany to all transactions
+  [transactions, amexTransactions, rogersTransactions, manualTransactions].forEach((arr, index) => {
+    const names = ['VISA', 'AMEX', 'ROGERS', 'MANUAL'];
+    console.log(`Fixing ${names[index]} transactions...`);
+    arr.forEach(t => {
+      if (t.isCompany === undefined) {
+        t.isCompany = false;
+        console.log(`Added isCompany to ${t.name}`);
+      }
+    });
+  });
+
+  forceRefreshAllTables();
+  console.log('Manual fix complete! Please check your tables now.');
+};
+
 // Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
   // Initialize existing transactions
   initializeTransactions();
+
+  // Force refresh all tables to ensure proper display
+  setTimeout(() => {
+    forceRefreshAllTables();
+  }, 100);
 
   // File Uploads
   fileInput.addEventListener('change', handleFileUpload);
@@ -633,18 +676,54 @@ function createTransactionRow(transaction, toggleSplitFn, toggleCompanyFn, delet
     transaction.isCompany = false;
   }
 
+  console.log(`Creating row for: ${transaction.name}, isCompany: ${transaction.isCompany}`);
+
   const row = document.createElement('tr');
-  row.innerHTML = `
-        <td>${formatDate(transaction.date)}</td>
-        <td title="${transaction.name}">${transaction.name}</td>
-        <td style="font-weight: bold; color: ${transaction.isSplit ? 'var(--success-color)' : 'inherit'};">${formatCurrency(transaction.expense)}</td>
-        <td><button class="btn-split ${transaction.isSplit ? 'active' : ''}" title="${transaction.isSplit ? 'Remove split' : 'Split expense'}">P</button></td>
-        <td><button class="btn-company ${transaction.isCompany ? 'active' : ''}" title="${transaction.isCompany ? 'Remove company expense' : 'Mark as company expense'}">C</button></td>
-        <td><button class="btn-delete" title="Delete transaction">Delete</button></td>
-    `;
-  row.querySelector('.btn-split').onclick = () => toggleSplitFn(transaction.id);
-  row.querySelector('.btn-company').onclick = () => toggleCompanyFn(transaction.id);
-  row.querySelector('.btn-delete').onclick = () => deleteFn(transaction.id);
+
+  // Create cells individually to ensure proper structure
+  const dateCell = document.createElement('td');
+  dateCell.textContent = formatDate(transaction.date);
+
+  const nameCell = document.createElement('td');
+  nameCell.textContent = transaction.name;
+  nameCell.title = transaction.name;
+
+  const expenseCell = document.createElement('td');
+  expenseCell.textContent = formatCurrency(transaction.expense);
+  expenseCell.style.fontWeight = 'bold';
+  expenseCell.style.color = transaction.isSplit ? 'var(--success-color)' : 'inherit';
+
+  const splitCell = document.createElement('td');
+  const splitBtn = document.createElement('button');
+  splitBtn.className = `btn-split ${transaction.isSplit ? 'active' : ''}`;
+  splitBtn.title = transaction.isSplit ? 'Remove split' : 'Split expense';
+  splitBtn.textContent = 'P';
+  splitBtn.onclick = () => toggleSplitFn(transaction.id);
+  splitCell.appendChild(splitBtn);
+
+  const companyCell = document.createElement('td');
+  const companyBtn = document.createElement('button');
+  companyBtn.className = `btn-company ${transaction.isCompany ? 'active' : ''}`;
+  companyBtn.title = transaction.isCompany ? 'Remove company expense' : 'Mark as company expense';
+  companyBtn.textContent = 'C';
+  companyBtn.onclick = () => toggleCompanyFn(transaction.id);
+  companyCell.appendChild(companyBtn);
+
+  const deleteCell = document.createElement('td');
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'btn-delete';
+  deleteBtn.title = 'Delete transaction';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.onclick = () => deleteFn(transaction.id);
+  deleteCell.appendChild(deleteBtn);
+
+  row.appendChild(dateCell);
+  row.appendChild(nameCell);
+  row.appendChild(expenseCell);
+  row.appendChild(splitCell);
+  row.appendChild(companyCell);
+  row.appendChild(deleteCell);
+
   return row;
 }
 
