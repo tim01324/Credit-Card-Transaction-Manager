@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
   loadTransactionsFromLocalStorage();
 
   // Load filter settings from localStorage
-  loadFilterSettingsFromLocalStorage();
+  const filtersLoaded = loadFilterSettingsFromLocalStorage();
 
   // Initialize existing transactions
   initializeTransactions();
@@ -119,6 +119,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // Force refresh all tables to ensure proper display
   setTimeout(() => {
     forceRefreshAllTables();
+
+    // If filters were loaded, apply them after tables are refreshed
+    if (filtersLoaded) {
+      console.log('Applying saved filters...');
+      renderTableWithFilters();
+      renderAmexTableWithFilters();
+      renderRogersTableWithFilters();
+      updateGrandTotal();
+    }
   }, 100);
 
   // File Uploads
@@ -172,13 +181,37 @@ document.addEventListener('DOMContentLoaded', function () {
   // PDF Export
   getElement('exportPdfBtn').addEventListener('click', exportToPdf);
 
-  // Auto-save filter settings when date inputs change
-  visaStartDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
-  visaEndDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
-  amexStartDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
-  amexEndDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
-  rogersStartDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
-  rogersEndDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
+  // Auto-save filter settings when date inputs change and apply filters
+  visaStartDateInput.addEventListener('change', () => {
+    saveFilterSettingsToLocalStorage();
+    renderTableWithFilters();
+    updateGrandTotal();
+  });
+  visaEndDateInput.addEventListener('change', () => {
+    saveFilterSettingsToLocalStorage();
+    renderTableWithFilters();
+    updateGrandTotal();
+  });
+  amexStartDateInput.addEventListener('change', () => {
+    saveFilterSettingsToLocalStorage();
+    renderAmexTableWithFilters();
+    updateGrandTotal();
+  });
+  amexEndDateInput.addEventListener('change', () => {
+    saveFilterSettingsToLocalStorage();
+    renderAmexTableWithFilters();
+    updateGrandTotal();
+  });
+  rogersStartDateInput.addEventListener('change', () => {
+    saveFilterSettingsToLocalStorage();
+    renderRogersTableWithFilters();
+    updateGrandTotal();
+  });
+  rogersEndDateInput.addEventListener('change', () => {
+    saveFilterSettingsToLocalStorage();
+    renderRogersTableWithFilters();
+    updateGrandTotal();
+  });
 
   // Other Actions
   clearAllDataBtn.addEventListener('click', clearAllData);
@@ -1087,7 +1120,9 @@ function loadFilterSettingsFromLocalStorage() {
     rogersEndDateInput.value = parsedFilters.rogersEndDate || '';
 
     console.log('Filter settings loaded from localStorage.');
+    return true; // Return true if filters were loaded
   }
+  return false; // Return false if no filters were found
 }
 
 function clearAllData() {
