@@ -977,26 +977,32 @@ function exportToPdf() {
     return currentY + 35;
   };
 
+  // Apply the same filters that are used in the UI
+  const filteredVisaTransactions = filterTransactions(transactions, visaStartDateInput.value, visaEndDateInput.value);
+  const filteredAmexTransactions = filterTransactions(amexTransactions, amexStartDateInput.value, amexEndDateInput.value);
+  const filteredRogersTransactions = filterTransactions(rogersTransactions, rogersStartDateInput.value, rogersEndDateInput.value);
+  const filteredManualTransactions = manualTransactions; // Manual transactions don't have date filters
+
   let currentY = 20;
-  currentY = addTransactionTableToPdf('VISA Transactions', transactions, totalAmountSpan, currentY);
+  currentY = addTransactionTableToPdf('VISA Transactions', filteredVisaTransactions, totalAmountSpan, currentY);
 
-  if (amexTransactions.length > 0) {
+  if (filteredAmexTransactions.length > 0) {
     doc.addPage();
     currentY = 20;
   }
-  currentY = addTransactionTableToPdf('AMEX Transactions', amexTransactions, amexTotalAmountSpan, currentY);
+  currentY = addTransactionTableToPdf('AMEX Transactions', filteredAmexTransactions, amexTotalAmountSpan, currentY);
 
-  if (rogersTransactions.length > 0) {
+  if (filteredRogersTransactions.length > 0) {
     doc.addPage();
     currentY = 20;
   }
-  currentY = addTransactionTableToPdf('ROGERS Transactions', rogersTransactions, rogersTotalAmountSpan, currentY);
+  currentY = addTransactionTableToPdf('ROGERS Transactions', filteredRogersTransactions, rogersTotalAmountSpan, currentY);
 
-  if (manualTransactions.length > 0) {
+  if (filteredManualTransactions.length > 0) {
     doc.addPage();
     currentY = 20;
   }
-  addTransactionTableToPdf('Manual Transactions', manualTransactions, manualTotalAmountSpan, currentY);
+  addTransactionTableToPdf('Manual Transactions', filteredManualTransactions, manualTotalAmountSpan, currentY);
 
   doc.save(`Credit_Card_Expenses_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
