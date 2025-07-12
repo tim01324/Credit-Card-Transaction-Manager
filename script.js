@@ -110,6 +110,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // Load data from localStorage first
   loadTransactionsFromLocalStorage();
 
+  // Load filter settings from localStorage
+  loadFilterSettingsFromLocalStorage();
+
   // Initialize existing transactions
   initializeTransactions();
 
@@ -124,9 +127,21 @@ document.addEventListener('DOMContentLoaded', function () {
   rogersFileInput.addEventListener('change', handleRogersFileUpload);
 
   // Filter Buttons
-  visaFilterBtn.addEventListener('click', () => { renderTableWithFilters(); updateGrandTotal(); });
-  amexFilterBtn.addEventListener('click', () => { renderAmexTableWithFilters(); updateGrandTotal(); });
-  rogersFilterBtn.addEventListener('click', () => { renderRogersTableWithFilters(); updateGrandTotal(); });
+  visaFilterBtn.addEventListener('click', () => {
+    renderTableWithFilters();
+    updateGrandTotal();
+    saveFilterSettingsToLocalStorage();
+  });
+  amexFilterBtn.addEventListener('click', () => {
+    renderAmexTableWithFilters();
+    updateGrandTotal();
+    saveFilterSettingsToLocalStorage();
+  });
+  rogersFilterBtn.addEventListener('click', () => {
+    renderRogersTableWithFilters();
+    updateGrandTotal();
+    saveFilterSettingsToLocalStorage();
+  });
 
   // Clear Filter Buttons
   visaClearFilterBtn.addEventListener('click', () => {
@@ -134,18 +149,21 @@ document.addEventListener('DOMContentLoaded', function () {
     visaEndDateInput.value = '';
     renderTableWithFilters();
     updateGrandTotal();
+    saveFilterSettingsToLocalStorage();
   });
   amexClearFilterBtn.addEventListener('click', () => {
     amexStartDateInput.value = '';
     amexEndDateInput.value = '';
     renderAmexTableWithFilters();
     updateGrandTotal();
+    saveFilterSettingsToLocalStorage();
   });
   rogersClearFilterBtn.addEventListener('click', () => {
     rogersStartDateInput.value = '';
     rogersEndDateInput.value = '';
     renderRogersTableWithFilters();
     updateGrandTotal();
+    saveFilterSettingsToLocalStorage();
   });
 
   // Manual transaction event listener
@@ -153,6 +171,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // PDF Export
   getElement('exportPdfBtn').addEventListener('click', exportToPdf);
+
+  // Auto-save filter settings when date inputs change
+  visaStartDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
+  visaEndDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
+  amexStartDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
+  amexEndDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
+  rogersStartDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
+  rogersEndDateInput.addEventListener('change', saveFilterSettingsToLocalStorage);
 
   // Other Actions
   clearAllDataBtn.addEventListener('click', clearAllData);
@@ -1019,6 +1045,19 @@ function saveTransactionsToLocalStorage() {
   console.log('Transactions saved to localStorage.');
 }
 
+function saveFilterSettingsToLocalStorage() {
+  const filterSettings = {
+    visaStartDate: visaStartDateInput.value,
+    visaEndDate: visaEndDateInput.value,
+    amexStartDate: amexStartDateInput.value,
+    amexEndDate: amexEndDateInput.value,
+    rogersStartDate: rogersStartDateInput.value,
+    rogersEndDate: rogersEndDateInput.value,
+  };
+  localStorage.setItem('creditCardFilters', JSON.stringify(filterSettings));
+  console.log('Filter settings saved to localStorage.');
+}
+
 function loadTransactionsFromLocalStorage() {
   const savedData = localStorage.getItem('creditCardTransactions');
   if (savedData) {
@@ -1030,6 +1069,24 @@ function loadTransactionsFromLocalStorage() {
     rogersTransactions = parsedData.rogersTransactions.map(t => ({ ...t, date: new Date(t.date) })) || [];
     manualTransactions = parsedData.manualTransactions.map(t => ({ ...t, date: new Date(t.date) })) || [];
     forceRefreshAllTables();
+  }
+}
+
+function loadFilterSettingsFromLocalStorage() {
+  const savedFilters = localStorage.getItem('creditCardFilters');
+  if (savedFilters) {
+    console.log('Loading filter settings from localStorage...');
+    const parsedFilters = JSON.parse(savedFilters);
+
+    // Restore filter values
+    visaStartDateInput.value = parsedFilters.visaStartDate || '';
+    visaEndDateInput.value = parsedFilters.visaEndDate || '';
+    amexStartDateInput.value = parsedFilters.amexStartDate || '';
+    amexEndDateInput.value = parsedFilters.amexEndDate || '';
+    rogersStartDateInput.value = parsedFilters.rogersStartDate || '';
+    rogersEndDateInput.value = parsedFilters.rogersEndDate || '';
+
+    console.log('Filter settings loaded from localStorage.');
   }
 }
 
@@ -1045,9 +1102,18 @@ function clearAllData() {
     rogersTransactions = [];
     manualTransactions = [];
 
+    // Clear filter inputs
+    visaStartDateInput.value = '';
+    visaEndDateInput.value = '';
+    amexStartDateInput.value = '';
+    amexEndDateInput.value = '';
+    rogersStartDateInput.value = '';
+    rogersEndDateInput.value = '';
+
     // Clear from localStorage
     localStorage.removeItem('creditCardTransactions');
-    console.log('All transaction data cleared from arrays and localStorage.');
+    localStorage.removeItem('creditCardFilters');
+    console.log('All transaction data and filter settings cleared from arrays and localStorage.');
 
     // Refresh UI
     forceRefreshAllTables();
