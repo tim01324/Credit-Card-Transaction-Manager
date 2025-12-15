@@ -1,9 +1,48 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import './FileUpload.css';
 
 export default function FileUpload({ onVisaUpload, onAmexUpload, onRogersUpload }) {
     const visaRef = useRef(null);
     const amexRef = useRef(null);
     const rogersRef = useRef(null);
+
+    const [dragStates, setDragStates] = useState({
+        visa: false,
+        amex: false,
+        rogers: false
+    });
+
+    const handleDragEnter = (cardType) => (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragStates(prev => ({ ...prev, [cardType]: true }));
+    };
+
+    const handleDragLeave = (cardType) => (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragStates(prev => ({ ...prev, [cardType]: false }));
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (cardType, handler, acceptedExtensions) => async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragStates(prev => ({ ...prev, [cardType]: false }));
+
+        const files = Array.from(e.dataTransfer.files).filter(file => {
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            return acceptedExtensions.includes(ext);
+        });
+
+        if (files.length > 0) {
+            await handler(files);
+        }
+    };
 
     const handleVisaChange = async (e) => {
         const files = e.target.files;
@@ -31,8 +70,14 @@ export default function FileUpload({ onVisaUpload, onAmexUpload, onRogersUpload 
 
     return (
         <div className="controls-container">
-            <div>
-                <label htmlFor="visaCsvInput" className="file-label">VISA:</label>
+            <div
+                className={`file-upload-zone ${dragStates.visa ? 'drag-active' : ''}`}
+                onDragEnter={handleDragEnter('visa')}
+                onDragLeave={handleDragLeave('visa')}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop('visa', onVisaUpload, ['.csv'])}
+            >
+                <label htmlFor="visaCsvInput" className="file-label">💳 VISA</label>
                 <input
                     type="file"
                     id="visaCsvInput"
@@ -41,9 +86,16 @@ export default function FileUpload({ onVisaUpload, onAmexUpload, onRogersUpload 
                     ref={visaRef}
                     onChange={handleVisaChange}
                 />
+                <span className="drop-hint">or drag & drop CSV</span>
             </div>
-            <div>
-                <label htmlFor="amexCsvInput" className="file-label">AMEX:</label>
+            <div
+                className={`file-upload-zone ${dragStates.amex ? 'drag-active' : ''}`}
+                onDragEnter={handleDragEnter('amex')}
+                onDragLeave={handleDragLeave('amex')}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop('amex', onAmexUpload, ['.xls', '.xlsx'])}
+            >
+                <label htmlFor="amexCsvInput" className="file-label">💎 AMEX</label>
                 <input
                     type="file"
                     id="amexCsvInput"
@@ -52,9 +104,16 @@ export default function FileUpload({ onVisaUpload, onAmexUpload, onRogersUpload 
                     ref={amexRef}
                     onChange={handleAmexChange}
                 />
+                <span className="drop-hint">or drag & drop Excel</span>
             </div>
-            <div>
-                <label htmlFor="rogersCsvInput" className="file-label">ROGERS:</label>
+            <div
+                className={`file-upload-zone ${dragStates.rogers ? 'drag-active' : ''}`}
+                onDragEnter={handleDragEnter('rogers')}
+                onDragLeave={handleDragLeave('rogers')}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop('rogers', onRogersUpload, ['.csv'])}
+            >
+                <label htmlFor="rogersCsvInput" className="file-label">📱 ROGERS</label>
                 <input
                     type="file"
                     id="rogersCsvInput"
@@ -63,6 +122,7 @@ export default function FileUpload({ onVisaUpload, onAmexUpload, onRogersUpload 
                     ref={rogersRef}
                     onChange={handleRogersChange}
                 />
+                <span className="drop-hint">or drag & drop CSV</span>
             </div>
         </div>
     );

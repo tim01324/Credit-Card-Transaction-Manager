@@ -1,0 +1,55 @@
+.category-selector {
+    margin-bottom: 1rem;
+}
+
+.category-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.category-option {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    color: var(--primary-color);
+}
+
+.category-option:hover {
+    border-color: var(--cat-color);
+    background: color-mix(in srgb, var(--cat-color) 10%, white);
+}
+
+.category-option.selected {
+    border-color: var(--cat-color);
+    background: var(--cat-color);
+    color: white;
+}
+
+.category-select-compact {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    font-size: 0.8rem;
+    background: var(--white);
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.category-select-compact:focus {
+    outline: none;
+    border-color: var(--success-color);
+}
+
+/* Category badge for table display */
+.category-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}

@@ -16,6 +16,9 @@
     "jspdf-autotable": "^3.5.25",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-helmet-async": "^2.0.5",
+    "react-hot-toast": "^2.6.0",
+    "recharts": "^3.6.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

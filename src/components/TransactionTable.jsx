@@ -1,10 +1,12 @@
 import { formatCurrency, formatDate } from '../utils/formatters';
+import EmptyState from './EmptyState';
 
 export default function TransactionTable({
     title,
     transactions,
     onToggleSplit,
     onToggleCompany,
+    onEdit,
     onDelete,
     showCompanyTotal,
     companyTotal,
@@ -15,6 +17,20 @@ export default function TransactionTable({
         const dateB = new Date(b.date);
         return dateB - dateA;
     });
+
+    // Show empty state when no transactions
+    if (transactions.length === 0) {
+        return (
+            <>
+                <h2>{title} Transactions</h2>
+                <EmptyState
+                    icon={title === 'VISA' ? '💳' : title === 'AMEX' ? '💎' : title === 'ROGERS' ? '📱' : '✏️'}
+                    title={`No ${title} transactions`}
+                    description="Upload a file or add a manual entry to see transactions here."
+                />
+            </>
+        );
+    }
 
     return (
         <>
@@ -28,7 +44,7 @@ export default function TransactionTable({
                         <th>Expenses</th>
                         <th>Split (P)</th>
                         <th>Company (C)</th>
-                        <th></th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,11 +78,18 @@ export default function TransactionTable({
                             </td>
                             <td>
                                 <button
+                                    className="btn-edit"
+                                    title="Edit transaction"
+                                    onClick={() => onEdit(transaction.id)}
+                                >
+                                    Edit
+                                </button>
+                                <button
                                     className="btn-delete"
                                     title="Delete transaction"
                                     onClick={() => onDelete(transaction.id)}
                                 >
-                                    Delete
+                                    Del
                                 </button>
                             </td>
                         </tr>

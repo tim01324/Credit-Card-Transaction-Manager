@@ -5,6 +5,7 @@ export default function Footer({
     companyGrandTotal,
     showCompanyTotal,
     onExportPdf,
+    onExportExcel,
     onClearAll
 }) {
     return (
@@ -22,9 +23,11 @@ export default function Footer({
                 )}
             </div>
             <div className="actions-container">
-                <button className="btn-export" onClick={onExportPdf}>Export as PDF</button>
-                <button className="btn-danger" onClick={onClearAll}>Clear All Data</button>
+                <button className="btn-export" onClick={onExportPdf}>📄 PDF</button>
+                <button className="btn-export btn-excel" onClick={onExportExcel}>📊 Excel</button>
+                <button className="btn-danger" onClick={onClearAll}>Clear All</button>
             </div>
         </footer>
     );
 }
+
