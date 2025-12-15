@@ -243,6 +243,11 @@ function App() {
     };
 
     const createDelete = (setTransactions, typeName) => (id) => {
+        // Blur the current button to prevent Enter key from re-triggering it
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
         const transaction = [...visaTransactions, ...amexTransactions, ...rogersTransactions, ...manualTransactions]
             .find(t => t.id === id);
         if (transaction) {
@@ -254,6 +259,7 @@ function App() {
                     </span>
                     <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                         <button
+                            autoFocus
                             onClick={() => {
                                 setTransactions(prev => prev.filter(tr => tr.id !== id));
                                 toast.dismiss(t.id);
