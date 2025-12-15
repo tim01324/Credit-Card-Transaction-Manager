@@ -72,11 +72,11 @@ describe('TransactionTable Component', () => {
         expect(mockToggleCompany).toHaveBeenCalled();
     });
 
-    it('should call onDelete when Delete button is clicked', () => {
+    it('should call onDelete when Del button is clicked', () => {
         const mockDelete = vi.fn();
         render(<TransactionTable {...defaultProps} onDelete={mockDelete} />);
 
-        const deleteButtons = screen.getAllByText('Delete');
+        const deleteButtons = screen.getAllByText('Del');
         fireEvent.click(deleteButtons[0]);
 
         expect(mockDelete).toHaveBeenCalled();
