@@ -15,6 +15,7 @@ describe('ManualEntry Component', () => {
         expect(screen.getByLabelText('Transaction Date')).toBeInTheDocument();
         expect(screen.getByLabelText('Transaction Name')).toBeInTheDocument();
         expect(screen.getByLabelText('Expense Amount')).toBeInTheDocument();
+        expect(screen.getByLabelText('Person')).toBeInTheDocument();
         expect(screen.getByText('Add Manual Transaction')).toBeInTheDocument();
     });
 
@@ -41,6 +42,22 @@ describe('ManualEntry Component', () => {
         expect(call.expense).toBe(25.50);
         expect(call.isSplit).toBe(false);
         expect(call.isCompany).toBe(false);
+        expect(call.person).toBe('Tim');
+    });
+
+    it('should submit a selected person and negative amount', () => {
+        render(<ManualEntry onAddTransaction={mockOnAddTransaction} />);
+
+        fireEvent.change(screen.getByLabelText('Transaction Date'), { target: { value: '2024-01-15' } });
+        fireEvent.change(screen.getByLabelText('Transaction Name'), { target: { value: 'Refund' } });
+        fireEvent.change(screen.getByLabelText('Expense Amount'), { target: { value: '-12.00' } });
+        fireEvent.change(screen.getByLabelText('Person'), { target: { value: 'Daniel' } });
+
+        fireEvent.click(screen.getByText('Add Manual Transaction'));
+
+        const call = mockOnAddTransaction.mock.calls[0][0];
+        expect(call.expense).toBe(-12.00);
+        expect(call.person).toBe('Daniel');
     });
 
     it('should clear fields after submission', () => {
@@ -49,15 +66,18 @@ describe('ManualEntry Component', () => {
         const dateInput = screen.getByLabelText('Transaction Date');
         const nameInput = screen.getByLabelText('Transaction Name');
         const amountInput = screen.getByLabelText('Expense Amount');
+        const personInput = screen.getByLabelText('Person');
 
         fireEvent.change(dateInput, { target: { value: '2024-01-15' } });
         fireEvent.change(nameInput, { target: { value: 'Test' } });
         fireEvent.change(amountInput, { target: { value: '10' } });
+        fireEvent.change(personInput, { target: { value: 'Daniel' } });
 
         fireEvent.click(screen.getByText('Add Manual Transaction'));
 
         expect(dateInput.value).toBe('');
         expect(nameInput.value).toBe('');
         expect(amountInput.value).toBe('');
+        expect(personInput.value).toBe('Tim');
     });
 });

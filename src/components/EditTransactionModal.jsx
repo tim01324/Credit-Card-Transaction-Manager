@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import './EditTransactionModal.css';
+import { DEFAULT_PERSON, PEOPLE, getTransactionPerson } from '../utils/transactionPeople';
 
 export default function EditTransactionModal({ transaction, onSave, onClose }) {
     const [date, setDate] = useState('');
     const [name, setName] = useState('');
     const [expense, setExpense] = useState('');
+    const [person, setPerson] = useState(DEFAULT_PERSON);
 
     useEffect(() => {
         if (transaction) {
@@ -15,6 +17,7 @@ export default function EditTransactionModal({ transaction, onSave, onClose }) {
             setDate(`${year}-${month}-${day}`);
             setName(transaction.name);
             setExpense(transaction.originalExpense.toString());
+            setPerson(getTransactionPerson(transaction));
         }
     }, [transaction]);
 
@@ -24,7 +27,7 @@ export default function EditTransactionModal({ transaction, onSave, onClose }) {
         if (!date || !name || !expense) return;
 
         const expenseValue = parseFloat(expense);
-        if (isNaN(expenseValue) || expenseValue <= 0) return;
+        if (isNaN(expenseValue) || expenseValue === 0) return;
 
         const parts = date.split('-');
         const transactionDate = new Date(
@@ -39,7 +42,8 @@ export default function EditTransactionModal({ transaction, onSave, onClose }) {
             date: transactionDate,
             name,
             originalExpense: expenseValue,
-            expense: transaction.isSplit ? expenseValue / 2 : expenseValue
+            expense: transaction.isSplit ? expenseValue / 2 : expenseValue,
+            person
         };
 
         onSave(updatedTransaction);
@@ -91,10 +95,21 @@ export default function EditTransactionModal({ transaction, onSave, onClose }) {
                                 value={expense}
                                 onChange={(e) => setExpense(e.target.value)}
                                 step="0.01"
-                                min="0.01"
                                 placeholder="0.00"
                                 required
                             />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="edit-person">Person</label>
+                            <select
+                                id="edit-person"
+                                value={person}
+                                onChange={(e) => setPerson(e.target.value)}
+                            >
+                                {PEOPLE.map(personName => (
+                                    <option key={personName} value={personName}>{personName}</option>
+                                ))}
+                            </select>
                         </div>
                         {transaction.isSplit && (
                             <div className="form-note">

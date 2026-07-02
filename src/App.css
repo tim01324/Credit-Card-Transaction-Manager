@@ -145,6 +145,22 @@ td {
 	border-bottom: 1px solid var(--border-color);
 }
 
+select {
+	padding: 0.5rem 0.7rem;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-small);
+	background: var(--white);
+	color: var(--primary-color);
+	font: inherit;
+	font-size: 0.9rem;
+}
+
+select:focus {
+	outline: none;
+	border-color: var(--success-color);
+	box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
 th {
 	font-weight: 600;
 	text-transform: uppercase;
@@ -244,6 +260,21 @@ button {
 	box-shadow: var(--shadow-soft);
 }
 
+.person-select {
+	min-width: 96px;
+}
+
+.person-label {
+	display: inline-block;
+	padding: 0.35rem 0.55rem;
+	border-radius: var(--border-radius-small);
+	background: #edf7f1;
+	color: var(--success-color);
+	font-weight: 700;
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+
 /* Premium File Input */
 input[type="file"] {
 	padding: 12px 16px;
@@ -309,6 +340,7 @@ input[type="file"]:hover {
 	display: flex;
 	gap: 2rem;
 	flex-grow: 1;
+	flex-wrap: wrap;
 }
 
 .summary-item {
@@ -346,6 +378,19 @@ input[type="file"]:hover {
 	margin: 0;
 	display: flex;
 	gap: 0.5rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.export-audience-label {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 /* Premium Export & Action Buttons */
@@ -460,9 +505,18 @@ input[type="file"]:hover {
 		width: 100%;
 	}
 
+	.export-audience-label,
+	.export-audience-label select {
+		width: 100%;
+	}
+
 	.btn-export,
 	.btn-danger {
 		width: 100%;
+	}
+
+	.manual-entry-container .form-row {
+		grid-template-columns: 1fr;
 	}
 }
 
@@ -484,12 +538,13 @@ input[type="file"]:hover {
 
 .manual-entry-container .form-row {
 	display: grid;
-	grid-template-columns: 1fr 2fr 1fr;
+	grid-template-columns: 1fr 2fr 1fr 120px;
 	gap: 0.75rem;
 	margin-bottom: 1rem;
 }
 
-.manual-entry-container input {
+.manual-entry-container input,
+.manual-entry-container select {
 	padding: 0.6rem 0.8rem;
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius-small);

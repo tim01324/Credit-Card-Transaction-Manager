@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { processVISACSV, processROGERSCSV } from '../utils/fileProcessors';
+import * as XLSX from 'xlsx';
+import { processVISACSV, processAMEXExcel, processROGERSCSV } from '../utils/fileProcessors';
+
+function createWorkbookBuffer(rows) {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Activity');
+    return XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+}
 
 describe('processVISACSV', () => {
     it('should parse valid VISA CSV content', () => {
@@ -81,5 +89,39 @@ describe('processROGERSCSV', () => {
 
         expect(result).toHaveLength(1);
         expect(result[0].name).toBe('Unknown Merchant');
+    });
+});
+
+describe('processAMEXExcel', () => {
+    it('should parse the new AMEX activity format and preserve negative amounts', () => {
+        const data = createWorkbookBuffer([
+            ['Transaction Details', 'American Express Cobalt Card'],
+            ['Date', 'Date Processed', 'Description', 'Card Member', 'Account #', 'Amount', 'Foreign Spend Amount'],
+            ['28 Jun 2026', '28 Jun 2026', 'MEMBERSHIP FEE INSTALLMENT', 'TE CHIA LIN', '-41008', '15.99', ''],
+            ['18 Jun 2026', '18 Jun 2026', 'PAYMENT RECEIVED - THANK YOU', 'TE CHIA LIN', '-41008', '-494.52', '']
+        ]);
+
+        const result = processAMEXExcel(data, []);
+
+        expect(result).toHaveLength(2);
+        expect(result[0].name).toBe('MEMBERSHIP FEE INSTALLMENT - TE CHIA LIN');
+        expect(result[0].expense).toBe(15.99);
+        expect(result[0].originalExpense).toBe(15.99);
+        expect(result[1].name).toBe('PAYMENT RECEIVED - THANK YOU - TE CHIA LIN');
+        expect(result[1].expense).toBe(-494.52);
+        expect(result[1].originalExpense).toBe(-494.52);
+    });
+
+    it('should keep old AMEX credit columns as negative amounts', () => {
+        const data = createWorkbookBuffer([
+            ['Date', 'Description', '', 'Card Member', 'Amount', 'Credit'],
+            ['1 Jun 2026', 'REFUND STORE', '', 'TE CHIA LIN', '', '20.00']
+        ]);
+
+        const result = processAMEXExcel(data, []);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].expense).toBe(-20.00);
+        expect(result[0].originalExpense).toBe(-20.00);
     });
 });

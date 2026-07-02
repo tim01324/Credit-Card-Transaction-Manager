@@ -1,15 +1,17 @@
 import { useState } from 'react';
+import { DEFAULT_PERSON, PEOPLE } from '../utils/transactionPeople';
 
 export default function ManualEntry({ onAddTransaction }) {
     const [date, setDate] = useState('');
     const [name, setName] = useState('');
     const [expense, setExpense] = useState('');
+    const [person, setPerson] = useState(DEFAULT_PERSON);
 
     const handleSubmit = () => {
         if (!date || !name || !expense) return;
 
         const expenseValue = parseFloat(expense);
-        if (isNaN(expenseValue) || expenseValue <= 0) return;
+        if (isNaN(expenseValue) || expenseValue === 0) return;
 
         const parts = date.split('-');
         if (parts.length !== 3) return;
@@ -35,13 +37,15 @@ export default function ManualEntry({ onAddTransaction }) {
             expense: expenseValue,
             originalExpense: expenseValue,
             isSplit: false,
-            isCompany: false
+            isCompany: false,
+            person
         };
 
         onAddTransaction(newTransaction);
         setDate('');
         setName('');
         setExpense('');
+        setPerson(DEFAULT_PERSON);
     };
 
     return (
@@ -69,6 +73,15 @@ export default function ManualEntry({ onAddTransaction }) {
                     onChange={(e) => setExpense(e.target.value)}
                     aria-label="Expense Amount"
                 />
+                <select
+                    value={person}
+                    onChange={(e) => setPerson(e.target.value)}
+                    aria-label="Person"
+                >
+                    {PEOPLE.map(personName => (
+                        <option key={personName} value={personName}>{personName}</option>
+                    ))}
+                </select>
             </div>
             <button onClick={handleSubmit}>Add Manual Transaction</button>
         </div>

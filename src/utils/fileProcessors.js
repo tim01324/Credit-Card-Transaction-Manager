@@ -1,4 +1,90 @@
 import * as XLSX from 'xlsx';
+import { DEFAULT_PERSON } from './transactionPeople';
+
+const AMEX_MONTHS = {
+    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+    'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+};
+
+function normalizeHeader(value) {
+    return String(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function findColumnIndex(headers, exactMatches, partialMatches = []) {
+    const exactSet = exactMatches.map(normalizeHeader);
+    let index = headers.findIndex(header => exactSet.includes(header));
+    if (index !== -1) return index;
+
+    index = headers.findIndex(header =>
+        partialMatches.some(match => header.includes(normalizeHeader(match)))
+    );
+    return index;
+}
+
+function parseAMEXDate(value) {
+    if (value instanceof Date) {
+        return new Date(Date.UTC(
+            value.getFullYear(),
+            value.getMonth(),
+            value.getDate(),
+            12,
+            0,
+            0
+        ));
+    }
+
+    if (typeof value === 'number') {
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if (parsed) {
+            return new Date(Date.UTC(parsed.y, parsed.m - 1, parsed.d, 12, 0, 0));
+        }
+    }
+
+    const dateStr = String(value ?? '').trim();
+    if (!dateStr) return null;
+
+    const parts = dateStr.replace(/[.,]/g, '').split(/\s+/);
+    if (parts.length === 3) {
+        if (parts[1].slice(0, 3) in AMEX_MONTHS) {
+            const day = parseInt(parts[0], 10);
+            const month = AMEX_MONTHS[parts[1].slice(0, 3)];
+            const year = parseInt(parts[2], 10);
+            if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+                return new Date(Date.UTC(year, month, day, 12, 0, 0));
+            }
+        }
+
+        if (parts[0].slice(0, 3) in AMEX_MONTHS) {
+            const month = AMEX_MONTHS[parts[0].slice(0, 3)];
+            const day = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            if (month !== undefined && !isNaN(day) && !isNaN(year)) {
+                return new Date(Date.UTC(year, month, day, 12, 0, 0));
+            }
+        }
+    }
+
+    const parsed = new Date(dateStr + 'T12:00:00Z');
+    return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function parseAmount(value) {
+    if (typeof value === 'number') return value;
+
+    const originalText = String(value ?? '').trim();
+    if (!originalText || originalText === '-') return NaN;
+
+    const normalizedText = originalText.replace(/\u2212/g, '-');
+    const isNegative =
+        normalizedText.includes('-') ||
+        /^\(.*\)$/.test(normalizedText) ||
+        /\b(cr|credit)\b/i.test(normalizedText);
+    const numericText = normalizedText.replace(/[^\d.]/g, '');
+    const amount = parseFloat(numericText);
+
+    if (isNaN(amount)) return NaN;
+    return isNegative ? -amount : amount;
+}
 
 /**
  * Process VISA CSV file content
@@ -67,7 +153,8 @@ export function processVISACSV(csvContent, existingTransactions = []) {
                     expense,
                     originalExpense: expense,
                     isSplit: false,
-                    isCompany: false
+                    isCompany: false,
+                    person: DEFAULT_PERSON
                 });
             }
         } catch (error) {
@@ -92,14 +179,35 @@ export function processAMEXExcel(data, existingTransactions = []) {
 
     const newTransactions = [];
     let dataStartIndex = -1;
+    let dateIndex = -1;
+    let descriptionIndex = -1;
+    let cardmemberIndex = -1;
+    let amountIndex = -1;
+    let creditIndex = -1;
 
     // Find the header row dynamically
     for (let i = 0; i < excelData.length; i++) {
         const row = excelData[i];
-        if (Array.isArray(row) && row.length > 1 &&
-            String(row[0]).trim() === 'Date' &&
-            String(row[1]).trim() === 'Description') {
+        if (!Array.isArray(row) || row.length < 2) continue;
+
+        const headers = row.map(normalizeHeader);
+        const possibleDateIndex = findColumnIndex(headers, ['date']);
+        const possibleDescriptionIndex = findColumnIndex(headers, ['description']);
+        const possibleAmountIndex = findColumnIndex(headers, [
+            'amount',
+            'charge',
+            'debit',
+            'charge amount',
+            'debit amount'
+        ]);
+
+        if (possibleDateIndex !== -1 && possibleDescriptionIndex !== -1) {
             dataStartIndex = i + 1;
+            dateIndex = possibleDateIndex;
+            descriptionIndex = possibleDescriptionIndex;
+            cardmemberIndex = findColumnIndex(headers, ['card member', 'cardmember', 'card member name']);
+            amountIndex = possibleAmountIndex !== -1 ? possibleAmountIndex : 4;
+            creditIndex = findColumnIndex(headers, ['credit', 'credits', 'credit amount']);
             break;
         }
     }
@@ -109,64 +217,33 @@ export function processAMEXExcel(data, existingTransactions = []) {
         return [];
     }
 
-    const monthMap = {
-        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
-    };
-
     for (let i = dataStartIndex; i < excelData.length; i++) {
         const row = excelData[i];
-        if (!Array.isArray(row) || row.length < 2 || !row[0]) {
-            if (row && row.length > 0 && String(row[0]).includes('Total')) break;
+        if (!Array.isArray(row) || row.length < 2 || !row[dateIndex]) {
+            if (row && row.some(cell => String(cell ?? '').includes('Total'))) break;
             continue;
         }
 
         try {
-            let date = null;
-            const dateStr = String(row[0]).trim();
-
-            if (typeof row[0] === 'number') {
-                date = new Date(Date.UTC(1900, 0, row[0] - 1, 12, 0, 0));
-            } else {
-                const parts = dateStr.replace(/[.,]/g, '').split(/\s+/);
-                if (parts.length === 3 && parts[1].slice(0, 3) in monthMap) {
-                    const day = parseInt(parts[0], 10);
-                    const month = monthMap[parts[1].slice(0, 3)];
-                    const year = parseInt(parts[2], 10);
-                    if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-                        date = new Date(Date.UTC(year, month, day, 12, 0, 0));
-                    }
-                } else {
-                    date = new Date(dateStr + 'T12:00:00Z');
-                }
-            }
+            const date = parseAMEXDate(row[dateIndex]);
 
             if (!date || isNaN(date.getTime())) continue;
 
-            const description = row[1] ? String(row[1]).trim() : '';
-            const cardmember = row[3] ? String(row[3]).trim() : '';
+            const description = row[descriptionIndex] ? String(row[descriptionIndex]).trim() : '';
+            const cardmember = cardmemberIndex !== -1 && row[cardmemberIndex] ? String(row[cardmemberIndex]).trim() : '';
             let name = description;
             if (cardmember) {
                 name = description ? `${description} - ${cardmember}` : cardmember;
             }
             if (!name) continue;
 
-            let expense = 0;
-            if (row[4] !== undefined && row[4] !== null) {
-                let amountStr = String(row[4]).trim();
-                if (amountStr.startsWith('$')) amountStr = amountStr.substring(1);
-                amountStr = amountStr.replace(/,/g, '');
-                if (row[5] !== undefined && row[5] !== null) {
-                    let creditStr = String(row[5]).trim().replace(/,/g, '');
-                    if (parseFloat(creditStr) > 0) amountStr = `-${creditStr}`;
-                }
-                expense = parseFloat(amountStr);
-            } else {
-                continue;
+            let expense = parseAmount(row[amountIndex]);
+            if (creditIndex !== -1 && row[creditIndex] !== undefined && row[creditIndex] !== null) {
+                const credit = parseAmount(row[creditIndex]);
+                if (!isNaN(credit) && credit > 0) expense = -credit;
             }
 
             if (isNaN(expense)) continue;
-            expense = Math.abs(expense);
 
             // Check for duplicates
             const isDuplicate = existingTransactions.some(t => {
@@ -187,7 +264,8 @@ export function processAMEXExcel(data, existingTransactions = []) {
                     expense,
                     originalExpense: expense,
                     isSplit: false,
-                    isCompany: false
+                    isCompany: false,
+                    person: DEFAULT_PERSON
                 });
             }
         } catch (error) {
@@ -291,7 +369,8 @@ export function processROGERSCSV(csvContent, existingTransactions = []) {
                     expense,
                     originalExpense: expense,
                     isSplit: false,
-                    isCompany: false
+                    isCompany: false,
+                    person: DEFAULT_PERSON
                 });
             }
         } catch (error) {

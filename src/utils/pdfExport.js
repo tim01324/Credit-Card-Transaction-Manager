@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatCurrency, formatDate } from './formatters';
+import { ALL_AUDIENCE, getTransactionPersonLabel } from './transactionPeople';
 
 /**
  * Export transactions to PDF
@@ -9,12 +10,21 @@ import { formatCurrency, formatDate } from './formatters';
  * @param {Array} params.amexTransactions - AMEX transactions
  * @param {Array} params.rogersTransactions - ROGERS transactions
  * @param {Array} params.manualTransactions - Manual transactions
+ * @param {string} params.audience - Export audience: all, Daniel, or Tim
  * @param {Object} params.filters - Date filters for each card type
  */
-export function exportToPdf({ visaTransactions, amexTransactions, rogersTransactions, manualTransactions, filters }) {
+export function exportToPdf({
+    visaTransactions,
+    amexTransactions,
+    rogersTransactions,
+    manualTransactions,
+    audience = ALL_AUDIENCE,
+    filters
+}) {
     const doc = new jsPDF();
+    const audienceLabel = audience === ALL_AUDIENCE ? 'All' : audience;
 
-    const addPdfHeader = (doc) => {
+    const addPdfHeader = () => {
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.text('Credit Card Expense Report', 14, 20);
@@ -26,6 +36,7 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
             month: 'long',
             day: 'numeric'
         })}`, 14, 30);
+        doc.text(`Export For: ${audienceLabel}`, 14, 36);
 
         const filterInfo = [];
         if (filters.visa?.startDate || filters.visa?.endDate) {
@@ -39,14 +50,14 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
         }
 
         if (filterInfo.length > 0) {
-            doc.text('Date Filters Applied:', 14, 40);
+            doc.text('Date Filters Applied:', 14, 46);
             filterInfo.forEach((info, index) => {
-                doc.text(`• ${info}`, 20, 46 + (index * 6));
+                doc.text(`- ${info}`, 20, 52 + (index * 6));
             });
-            return 52 + (filterInfo.length * 6);
+            return 58 + (filterInfo.length * 6);
         }
 
-        return 40;
+        return 46;
     };
 
     const addTransactionTableToPdf = (title, transactions, startY) => {
@@ -63,22 +74,25 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
 
         let currentY = startY + 10;
 
-        if (personalTransactions.length > 0) {
+        const addTable = (rows, heading, fillColor) => {
+            if (rows.length === 0) return currentY;
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text('Personal Expenses', 14, currentY);
+            doc.text(heading, 14, currentY);
 
             doc.autoTable({
-                head: [['Date', 'Description', 'Amount', 'Split']],
-                body: personalTransactions.map(t => [
+                head: [['Date', 'Description', 'Person', 'Amount', 'Split']],
+                body: rows.map(t => [
                     formatDate(new Date(t.date)),
                     t.name,
+                    getTransactionPersonLabel(t, audience),
                     formatCurrency(t.expense),
                     t.isSplit ? 'Yes' : 'No'
                 ]),
                 startY: currentY + 5,
                 headStyles: {
-                    fillColor: [41, 128, 185],
+                    fillColor,
                     textColor: 255,
                     fontSize: 10,
                     fontStyle: 'bold',
@@ -92,52 +106,19 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
                 },
                 columnStyles: {
                     0: { halign: 'center', cellWidth: 30 },
-                    1: { halign: 'left', cellWidth: 80 },
-                    2: { halign: 'right', cellWidth: 30 },
-                    3: { halign: 'center', cellWidth: 20 }
+                    1: { halign: 'left', cellWidth: 70 },
+                    2: { halign: 'center', cellWidth: 28 },
+                    3: { halign: 'right', cellWidth: 30 },
+                    4: { halign: 'center', cellWidth: 20 }
                 },
                 alternateRowStyles: { fillColor: [245, 245, 245] }
             });
-            currentY = doc.autoTable.previous.finalY + 8;
-        }
 
-        if (companyTransactions.length > 0) {
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Company Expenses', 14, currentY);
+            return doc.autoTable.previous.finalY + 8;
+        };
 
-            doc.autoTable({
-                head: [['Date', 'Description', 'Amount', 'Split']],
-                body: companyTransactions.map(t => [
-                    formatDate(new Date(t.date)),
-                    t.name,
-                    formatCurrency(t.expense),
-                    t.isSplit ? 'Yes' : 'No'
-                ]),
-                startY: currentY + 5,
-                headStyles: {
-                    fillColor: [52, 152, 219],
-                    textColor: 255,
-                    fontSize: 10,
-                    fontStyle: 'bold',
-                    halign: 'center'
-                },
-                styles: {
-                    cellPadding: 4,
-                    fontSize: 9,
-                    lineColor: [200, 200, 200],
-                    lineWidth: 0.1
-                },
-                columnStyles: {
-                    0: { halign: 'center', cellWidth: 30 },
-                    1: { halign: 'left', cellWidth: 80 },
-                    2: { halign: 'right', cellWidth: 30 },
-                    3: { halign: 'center', cellWidth: 20 }
-                },
-                alternateRowStyles: { fillColor: [245, 245, 245] }
-            });
-            currentY = doc.autoTable.previous.finalY + 8;
-        }
+        currentY = addTable(personalTransactions, 'Personal Expenses', [41, 128, 185]);
+        currentY = addTable(companyTransactions, 'Company Expenses', [52, 152, 219]);
 
         const personalTotal = personalTransactions.reduce((sum, t) => sum + t.expense, 0);
         const companyTotal = companyTransactions.reduce((sum, t) => sum + t.expense, 0);
@@ -159,7 +140,7 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
         return currentY + 35;
     };
 
-    let currentY = addPdfHeader(doc);
+    let currentY = addPdfHeader();
     currentY += 10;
 
     if (visaTransactions.length > 0) {
@@ -190,7 +171,6 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
         currentY = addTransactionTableToPdf('Manual Transactions', manualTransactions, currentY);
     }
 
-    // Grand Total
     if (currentY > 220) {
         doc.addPage();
         currentY = 20;
@@ -223,14 +203,14 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
 
-    if (visaTotal > 0) doc.text(`VISA Total: ${formatCurrency(visaTotal)}`, 20, currentY + 8);
-    if (amexTotal > 0) doc.text(`AMEX Total: ${formatCurrency(amexTotal)}`, 20, currentY + 16);
-    if (rogersTotal > 0) doc.text(`ROGERS Total: ${formatCurrency(rogersTotal)}`, 20, currentY + 24);
-    if (manualTotal > 0) doc.text(`Manual Total: ${formatCurrency(manualTotal)}`, 20, currentY + 32);
+    if (visaTransactions.length > 0) doc.text(`VISA Total: ${formatCurrency(visaTotal)}`, 20, currentY + 8);
+    if (amexTransactions.length > 0) doc.text(`AMEX Total: ${formatCurrency(amexTotal)}`, 20, currentY + 16);
+    if (rogersTransactions.length > 0) doc.text(`ROGERS Total: ${formatCurrency(rogersTotal)}`, 20, currentY + 24);
+    if (manualTransactions.length > 0) doc.text(`Manual Total: ${formatCurrency(manualTotal)}`, 20, currentY + 32);
 
     doc.setFont('helvetica', 'bold');
     doc.text(`Total Personal Expenses: ${formatCurrency(totalPersonalExpenses)}`, 20, currentY + 40);
-    if (totalCompanyExpenses > 0) {
+    if (totalCompanyExpenses !== 0) {
         doc.text(`Total Company Expenses: ${formatCurrency(totalCompanyExpenses)}`, 110, currentY + 40);
     }
 
@@ -242,5 +222,6 @@ export function exportToPdf({ visaTransactions, amexTransactions, rogersTransact
     doc.setFont('helvetica', 'bold');
     doc.text(`GRAND TOTAL: ${formatCurrency(grandTotal)}`, 20, currentY + 10);
 
-    doc.save(`Credit_Card_Expenses_${new Date().toISOString().slice(0, 10)}.pdf`);
+    const audienceFilePart = audience === ALL_AUDIENCE ? 'All' : audience;
+    doc.save(`Credit_Card_Expenses_${audienceFilePart}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }

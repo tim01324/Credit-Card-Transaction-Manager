@@ -1,4 +1,5 @@
 import { formatCurrency, formatDate } from '../utils/formatters';
+import { getTransactionPerson, getTransactionPersonLabel, PEOPLE } from '../utils/transactionPeople';
 import EmptyState from './EmptyState';
 
 export default function TransactionTable({
@@ -6,6 +7,7 @@ export default function TransactionTable({
     transactions,
     onToggleSplit,
     onToggleCompany,
+    onChangePerson = () => {},
     onEdit,
     onDelete,
     showCompanyTotal,
@@ -42,6 +44,7 @@ export default function TransactionTable({
                         <th>Date</th>
                         <th>Name</th>
                         <th>Expenses</th>
+                        <th>Person</th>
                         <th>Split (P)</th>
                         <th>Company (C)</th>
                         <th>Actions</th>
@@ -57,6 +60,24 @@ export default function TransactionTable({
                                 color: transaction.isSplit ? 'var(--success-color)' : 'inherit'
                             }}>
                                 {formatCurrency(transaction.expense)}
+                            </td>
+                            <td>
+                                {transaction.isSplit ? (
+                                    <span className="person-label split-person">
+                                        {getTransactionPersonLabel(transaction)}
+                                    </span>
+                                ) : (
+                                    <select
+                                        className="person-select"
+                                        value={getTransactionPerson(transaction)}
+                                        onChange={(e) => onChangePerson(transaction.id, e.target.value)}
+                                        aria-label={`Person for ${transaction.name}`}
+                                    >
+                                        {PEOPLE.map(person => (
+                                            <option key={person} value={person}>{person}</option>
+                                        ))}
+                                    </select>
+                                )}
                             </td>
                             <td>
                                 <button

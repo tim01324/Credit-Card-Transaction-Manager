@@ -11,7 +11,8 @@ describe('TransactionTable Component', () => {
             expense: 5.00,
             originalExpense: 5.00,
             isSplit: false,
-            isCompany: false
+            isCompany: false,
+            person: 'Daniel'
         },
         {
             id: '2',
@@ -20,7 +21,8 @@ describe('TransactionTable Component', () => {
             expense: 50.00,
             originalExpense: 50.00,
             isSplit: false,
-            isCompany: true
+            isCompany: true,
+            person: 'Tim'
         }
     ];
 
@@ -32,6 +34,7 @@ describe('TransactionTable Component', () => {
         showCompanyTotal: true,
         onToggleSplit: vi.fn(),
         onToggleCompany: vi.fn(),
+        onChangePerson: vi.fn(),
         onDelete: vi.fn()
     };
 
@@ -82,6 +85,15 @@ describe('TransactionTable Component', () => {
         expect(mockDelete).toHaveBeenCalled();
     });
 
+    it('should call onChangePerson when person selection changes', () => {
+        const mockChangePerson = vi.fn();
+        render(<TransactionTable {...defaultProps} onChangePerson={mockChangePerson} />);
+
+        fireEvent.change(screen.getByLabelText('Person for Gas Station'), { target: { value: 'Daniel' } });
+
+        expect(mockChangePerson).toHaveBeenCalledWith('2', 'Daniel');
+    });
+
     it('should show active class on split button when transaction is split', () => {
         const splitTransaction = [{
             ...mockTransactions[0],
@@ -93,6 +105,7 @@ describe('TransactionTable Component', () => {
 
         const splitButton = screen.getByText('P');
         expect(splitButton.classList.contains('active')).toBe(true);
+        expect(screen.getByText('Daniel + Tim')).toBeInTheDocument();
     });
 
     it('should sort transactions by date (newest first)', () => {

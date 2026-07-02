@@ -14,6 +14,7 @@ import SearchBar from './components/SearchBar';
 import { processVISACSV, processAMEXExcel, processROGERSCSV, readFileAsText, readFileAsBuffer } from './utils/fileProcessors';
 import { exportToPdf } from './utils/pdfExport';
 import { exportToExcel } from './utils/csvExport';
+import { ALL_AUDIENCE, calculatePersonTotals, filterTransactionsByAudience } from './utils/transactionPeople';
 
 function App() {
     // Transaction state with localStorage persistence
@@ -26,6 +27,7 @@ function App() {
     const [visaFilter, setVisaFilter] = useLocalStorage('visa_filter', { startDate: '', endDate: '' });
     const [amexFilter, setAmexFilter] = useLocalStorage('amex_filter', { startDate: '', endDate: '' });
     const [rogersFilter, setRogersFilter] = useLocalStorage('rogers_filter', { startDate: '', endDate: '' });
+    const [exportAudience, setExportAudience] = useLocalStorage('export_audience', ALL_AUDIENCE);
 
     // Loading state
     const [isLoading, setIsLoading] = useState(false);
@@ -110,6 +112,10 @@ function App() {
     const rogersTotal = useMemo(() => calculateTotal(searchedRogers), [searchedRogers]);
     const manualTotal = useMemo(() => calculateTotal(searchedManual), [searchedManual]);
     const grandTotal = visaTotal + amexTotal + rogersTotal + manualTotal;
+    const personTotals = useMemo(() =>
+        calculatePersonTotals([...searchedVisa, ...searchedAmex, ...searchedRogers, ...searchedManual]),
+        [searchedVisa, searchedAmex, searchedRogers, searchedManual]
+    );
 
     const visaCompanyTotal = useMemo(() => calculateCompanyTotal(searchedVisa), [searchedVisa]);
     const amexCompanyTotal = useMemo(() => calculateCompanyTotal(searchedAmex), [searchedAmex]);
@@ -217,6 +223,12 @@ function App() {
         ));
     };
 
+    const createChangePerson = (setTransactions) => (id, person) => {
+        setTransactions(prev => prev.map(t =>
+            t.id === id ? { ...t, person } : t
+        ));
+    };
+
     const createEdit = (setTransactions, typeName) => (id) => {
         const allTransactions = {
             VISA: visaTransactions,
@@ -291,11 +303,17 @@ function App() {
     const handleExportPdf = async () => {
         setIsLoading(true);
         try {
+            const selectedVisa = filterTransactionsByAudience(filteredVisa, exportAudience);
+            const selectedAmex = filterTransactionsByAudience(filteredAmex, exportAudience);
+            const selectedRogers = filterTransactionsByAudience(filteredRogers, exportAudience);
+            const selectedManual = filterTransactionsByAudience(manualTransactions, exportAudience);
+
             await exportToPdf({
-                visaTransactions: filteredVisa,
-                amexTransactions: filteredAmex,
-                rogersTransactions: filteredRogers,
-                manualTransactions,
+                visaTransactions: selectedVisa,
+                amexTransactions: selectedAmex,
+                rogersTransactions: selectedRogers,
+                manualTransactions: selectedManual,
+                audience: exportAudience,
                 filters: {
                     visa: visaFilter,
                     amex: amexFilter,
@@ -440,6 +458,7 @@ function App() {
                     showCompanyTotal={visaCompanyTotal > 0}
                     onToggleSplit={createToggleSplit(setVisaTransactions)}
                     onToggleCompany={createToggleCompany(setVisaTransactions)}
+                    onChangePerson={createChangePerson(setVisaTransactions)}
                     onEdit={createEdit(setVisaTransactions, 'VISA')}
                     onDelete={createDelete(setVisaTransactions, 'VISA')}
                 />
@@ -462,6 +481,7 @@ function App() {
                     showCompanyTotal={amexCompanyTotal > 0}
                     onToggleSplit={createToggleSplit(setAmexTransactions)}
                     onToggleCompany={createToggleCompany(setAmexTransactions)}
+                    onChangePerson={createChangePerson(setAmexTransactions)}
                     onEdit={createEdit(setAmexTransactions, 'AMEX')}
                     onDelete={createDelete(setAmexTransactions, 'AMEX')}
                 />
@@ -484,6 +504,7 @@ function App() {
                     showCompanyTotal={rogersCompanyTotal > 0}
                     onToggleSplit={createToggleSplit(setRogersTransactions)}
                     onToggleCompany={createToggleCompany(setRogersTransactions)}
+                    onChangePerson={createChangePerson(setRogersTransactions)}
                     onEdit={createEdit(setRogersTransactions, 'ROGERS')}
                     onDelete={createDelete(setRogersTransactions, 'ROGERS')}
                 />
@@ -497,6 +518,7 @@ function App() {
                     showCompanyTotal={manualCompanyTotal > 0}
                     onToggleSplit={createToggleSplit(setManualTransactions)}
                     onToggleCompany={createToggleCompany(setManualTransactions)}
+                    onChangePerson={createChangePerson(setManualTransactions)}
                     onEdit={createEdit(setManualTransactions, 'Manual')}
                     onDelete={createDelete(setManualTransactions, 'Manual')}
                 />
@@ -504,15 +526,23 @@ function App() {
                 <Footer
                     grandTotal={grandTotal}
                     companyGrandTotal={companyGrandTotal}
+                    personTotals={personTotals}
+                    exportAudience={exportAudience}
+                    onExportAudienceChange={setExportAudience}
                     showCompanyTotal={hasCompanyTransactions}
                     onExportPdf={handleExportPdf}
                     onExportExcel={() => {
+                        const selectedVisa = filterTransactionsByAudience(searchedVisa, exportAudience);
+                        const selectedAmex = filterTransactionsByAudience(searchedAmex, exportAudience);
+                        const selectedRogers = filterTransactionsByAudience(searchedRogers, exportAudience);
+                        const selectedManual = filterTransactionsByAudience(searchedManual, exportAudience);
+
                         exportToExcel({
-                            visa: searchedVisa,
-                            amex: searchedAmex,
-                            rogers: searchedRogers,
-                            manual: searchedManual
-                        });
+                            visa: selectedVisa,
+                            amex: selectedAmex,
+                            rogers: selectedRogers,
+                            manual: selectedManual
+                        }, exportAudience === ALL_AUDIENCE ? 'credit-card-expenses' : `credit-card-expenses-${exportAudience}`, exportAudience);
                         toast.success('Excel exported successfully');
                     }}
                     onClearAll={handleClearAll}

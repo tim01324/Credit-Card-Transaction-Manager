@@ -1,16 +1,18 @@
 import * as XLSX from 'xlsx';
+import { ALL_AUDIENCE, getTransactionPersonLabel } from './transactionPeople';
 
-export function exportToCSV(transactions, filename = 'transactions') {
+export function exportToCSV(transactions, filename = 'transactions', audience = ALL_AUDIENCE) {
     if (transactions.length === 0) {
         return false;
     }
 
-    const headers = ['Date', 'Name', 'Amount', 'Original Amount', 'Is Split', 'Is Company', 'Category'];
+    const headers = ['Date', 'Name', 'Amount', 'Original Amount', 'Person', 'Is Split', 'Is Company', 'Category'];
     const rows = transactions.map(t => [
         new Date(t.date).toLocaleDateString(),
         t.name,
         t.expense.toFixed(2),
         t.originalExpense.toFixed(2),
+        getTransactionPersonLabel(t, audience),
         t.isSplit ? 'Yes' : 'No',
         t.isCompany ? 'Yes' : 'No',
         t.category || 'Uncategorized'
@@ -33,7 +35,7 @@ export function exportToCSV(transactions, filename = 'transactions') {
     return true;
 }
 
-export function exportToExcel(allTransactions, filename = 'credit-card-expenses') {
+export function exportToExcel(allTransactions, filename = 'credit-card-expenses', audience = ALL_AUDIENCE) {
     const { visa, amex, rogers, manual } = allTransactions;
 
     const formatSheet = (transactions, sheetName) => {
@@ -41,12 +43,13 @@ export function exportToExcel(allTransactions, filename = 'credit-card-expenses'
             return [['No transactions']];
         }
 
-        const headers = ['Date', 'Name', 'Amount', 'Original Amount', 'Is Split', 'Is Company', 'Category'];
+        const headers = ['Date', 'Name', 'Amount', 'Original Amount', 'Person', 'Is Split', 'Is Company', 'Category'];
         const rows = transactions.map(t => [
             new Date(t.date).toLocaleDateString(),
             t.name,
             t.expense,
             t.originalExpense,
+            getTransactionPersonLabel(t, audience),
             t.isSplit ? 'Yes' : 'No',
             t.isCompany ? 'Yes' : 'No',
             t.category || 'Uncategorized'
